@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}
+Settings
+{% endblock title %}
+{% block body %}
+<main class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <form class="card mb-4" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="cover" id="coverPrev" style="background-image:linear-gradient(135deg,#6c4cf1,#ff5fa2)"></div>
+        <div class="card-body pt-0 px-4 pb-4">
+          <div class="profile-top d-flex align-items-end gap-3 mb-4">
+            <span class="av av-xl" id="avatarPrev"
+                  style="--h:260;{% if user.img %}background-image:url('{{ user.img.url }}');background-size:cover;background-position:center;{% endif %}">
+              {% if not user.img %}{{ user.username|first|upper }}{% endif %}
+            </span>
+            <div class="pb-2 d-flex flex-wrap gap-2">
+              <label class="chip">
+                <i class="bi bi-camera"></i> Change photo
+                <input type="file" name="img" accept="image/*" id="id_img" data-preview="#avatarPrev" hidden>
+              </label>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label" for="{{ form.first_name.id_for_label }}">First name</label>
+              {{ form.first_name }} {{ form.first_name.errors }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="{{ form.last_name.id_for_label }}">Last name</label>
+              {{ form.last_name }} {{ form.last_name.errors }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+              {{ form.username }} {{ form.username.errors }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Email</label>
+              <button class="form-control" disabled="disabled">{{user.email}}</button>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="{{ form.bio.id_for_label }}">Bio</label>
+              {{ form.bio }} {{ form.bio.errors }}
+            </div>
+            <div class="col-sm-6">{{ form.city }}</div>
+            <div class="col-sm-6">{{ form.place }}</div>
+            
+            <div>
+              <label class="form-label" for="{{ form.is_private.id_for_label }}">Private?</label>
+              {{form.is_private}}
+            </div>
+            <div>
+              <label class="form-label" for="{{ form.show_followers.id_for_label }}">Show Followers</label>
+              {{form.show_followers}}
+            </div>
+            <div>
+              <label class="form-label" for="{{ form.show_following.id_for_label }}">Show Following</label>
+              {{form.show_following}}
+            </div>
+            <div>
+              <label class="form-label" for="{{ form.check_follower.id_for_label }}">Check Follower</label>
+              {{form.check_follower}}
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-brand px-4">Save changes</button>
+            <a class="btn btn-soft" href="{% url 'profile' %}">Cancel</a>
+          </div>
+        </div>
+      </form>
+      
+      <form class="card" method="POST">
+        <div class="card-body p-4 d-flex align-items-center gap-3">
+          <i class="bi bi-patch-check-fill verified fs-1"></i>
+          <div class="flex-grow-1"><h6 class="mb-1">Get verified</h6><p class="small muted mb-0">Request a blue badge to show your account is authentic. We review requests within 3 days.</p></div>
+          <button class="btn btn-verify"><i class="bi bi-patch-check-fill"></i> Request verification</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock body %}

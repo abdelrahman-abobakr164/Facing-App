@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.dataset.bsTheme=localStorage.theme||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")</script>
+<link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="assets/vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
+<link href="assets/css/style.css" rel="stylesheet">
+<title>Home | Facing</title>
+</head>
+<body>
+<nav class="topbar sticky-top"><div class="container d-flex align-items-center gap-3">
+  <a class="brand" href="index.html"><i class="bi bi-lightning-charge-fill"></i> Facing</a>
+  <form class="search d-none d-md-flex"><i class="bi bi-search muted"></i><input placeholder="Search people, posts..." aria-label="Search"></form>
+  <div class="ms-auto d-flex align-items-center gap-1">
+    <a class="nav-i" data-p="feed" aria-current="page" href="index.html" title="Home"><i class="bi bi-house-door"></i></a>
+    <a class="nav-i" data-p="friends" href="friend-requests.html" title="Friend requests"><i class="bi bi-people"></i><b class="dot">3</b></a>
+    <button class="nav-i" type="button" id="msgToggle" title="Messages" aria-label="Messages" aria-expanded="false" aria-controls="msgPanel"><i class="bi bi-chat-dots"></i><b class="dot">1</b></button>
+    <a class="nav-i" data-p="notifications" href="notifications.html" title="Notifications"><i class="bi bi-bell"></i><b class="dot">2</b></a>
+    <button class="nav-i" type="button" data-theme-toggle title="Toggle theme"><i class="bi bi-moon-stars"></i></button>
+    <div class="dropdown ms-1"><a href="#" data-bs-toggle="dropdown" aria-label="Account"><span class="av av-sm" style="--h:260">A</span></a>
+      <ul class="dropdown-menu dropdown-menu-end shadow-lg p-2">
+        <li><a class="dropdown-item" href="profile.html">My profile</a></li>
+        <li><a class="dropdown-item" href="followers.html">Followers &amp; following</a></li>
+        <li><a class="dropdown-item" href="settings.html">Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="login.html">Log out</a></li>
+      </ul></div>
+  </div></div></nav><main class="container py-4"><div class="row g-4">
+  <aside class="col-lg-3 d-none d-lg-block"><div class="card side"><div class="card-body text-center">
+    <span class="av av-xl mx-auto" style="--h:260">A</span><h6 class="mt-2 mb-0">Alex Morgan</h6><div class="small muted mb-3">@alexm</div>
+    <div class="d-flex justify-content-around small mb-3"><div><b>12</b><div class="muted">Posts</div></div>
+      <a class="text-reset" href="followers.html"><b>248</b><div class="muted">Followers</div></a><a class="text-reset" href="followers.html#following"><b>191</b><div class="muted">Following</div></a></div>
+    <a class="btn btn-soft w-100" href="profile.html">View profile</a></div></div></aside>
+
+  <section class="col-lg-6">
+    <div class="stories">
+      <button class="story add" type="button" data-bs-toggle="modal" data-bs-target="#createStory"><span class="ring"><span class="av"><i class="bi bi-plus-lg"></i></span></span><small>Your story</small></button>
+      <button class="story" type="button" data-user="Lina Hassan"><span class="ring"><span class="av" style="--h:330">L</span></span><small>Lina</small>
+        <span class="d-none"><i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#f7b267,#f4845f)" data-text="Golden hour vibes" data-time="2h"></i>
+        <i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#84c7a5,#3d8b74)" data-text="Weekend plans?" data-time="1h"></i></span></button>
+      <button class="story" type="button" data-user="Omar Khaled"><span class="ring"><span class="av" style="--h:200">O</span></span><small>Omar</small>
+        <span class="d-none"><i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#6c4cf1,#3a86ff)" data-text="Shipping day!" data-time="4h"></i></span></button>
+      <button class="story" type="button" data-user="Sara Nabil"><span class="ring"><span class="av" style="--h:150">S</span></span><small>Sara</small>
+        <span class="d-none"><i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#ff5fa2,#ffb86b)" data-text="Best street food ever" data-time="6h"></i></span></button>
+      <button class="story" type="button" data-user="Karim Adel"><span class="ring"><span class="av" style="--h:20">K</span></span><small>Karim</small>
+        <span class="d-none"><i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#232526,#414345)" data-text="10K done" data-time="9h"></i></span></button>
+    </div>
+
+    <form class="card mb-3" method="post" enctype="multipart/form-data"><div class="card-body">
+      <div class="d-flex gap-3"><span class="av" style="--h:260">A</span>
+        <textarea class="form-control border-0" name="content" rows="2" placeholder="What's on your mind, Alex?" aria-label="New post"></textarea></div>
+      <div class="preview d-none"><button type="button" class="preview-x" data-clear aria-label="Remove media">&times;</button><img alt="Preview"><video controls></video></div>
+      <div class="d-flex align-items-center gap-2 mt-3">
+        <label class="chip"><i class="bi bi-image"></i> Photo<input type="file" name="image" accept="image/*" hidden></label>
+        <label class="chip"><i class="bi bi-camera-video"></i> Video<input type="file" name="video" accept="video/*" hidden></label>
+        <button class="btn btn-brand ms-auto px-4">Post</button></div>
+    </div></form>
+    <article class="card mb-3"><div class="card-body">
+  <div class="d-flex align-items-center gap-2 mb-3"><a href="profile.html"><span class="av" style="--h:330">L</span></a>
+    <div class="flex-grow-1"><a class="name" href="profile.html">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><div class="small muted">@lina &middot; 12 min ago</div></div></div>
+  <p>Golden hour at the Corniche today. Sometimes the best shots are the ones you did not plan.</p>
+  <div class="media mb-2" style="background-image:linear-gradient(135deg,#f7b267,#f4845f)" role="img" aria-label="Post photo"></div>
+  <div class="d-flex gap-1 border-top pt-2">
+    <button class="action like"><i class="bi bi-heart"></i> <span>42</span></button>
+    <button class="action js-comment"><i class="bi bi-chat"></i> <span>1</span></button>
+    <button class="action ms-auto"><i class="bi bi-share"></i> Share</button></div>
+  <div class="comments d-none mt-3"><div class="d-flex gap-2 mb-2"><span class="av av-sm" style="--h:200">O</span><div class="bubble mb-0"><b class="small">Omar</b><div>Stunning colors!</div></div></div>
+    <form class="d-flex gap-2 mt-2"><input class="form-control" placeholder="Write a comment" aria-label="Comment"><button class="btn btn-brand">Send</button></form></div>
+</div></article>
+    <article class="card mb-3"><div class="card-body">
+  <div class="d-flex align-items-center gap-2 mb-3"><a href="profile.html"><span class="av" style="--h:260">A</span></a>
+    <div class="flex-grow-1"><a class="name" href="profile.html">Alex Morgan</a><div class="small muted">@alexm &middot; 5 hours ago</div></div>
+    <div class="dropdown"><button class="action" data-bs-toggle="dropdown" aria-label="Post menu"><i class="bi bi-three-dots"></i></button>
+      <ul class="dropdown-menu dropdown-menu-end p-2">
+        <li><a class="dropdown-item" href="post-edit.html"><i class="bi bi-pencil me-2"></i>Edit post</a></li>
+        <li><form method="post"><button class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Delete post</button></form></li></ul></div></div>
+  <p>Behind the scenes of our new onboarding flow. Feedback is welcome!</p>
+  <div class="media mb-2" style="background-image:linear-gradient(135deg,#9fb4f5,#6b6fd6)" role="img" aria-label="Post video"><span class="play"><i class="bi bi-play-circle-fill"></i></span></div>
+  <div class="d-flex gap-1 border-top pt-2">
+    <button class="action like active"><i class="bi bi-heart-fill"></i> <span>15</span></button>
+    <button class="action js-comment"><i class="bi bi-chat"></i> <span>0</span></button>
+    <button class="action ms-auto"><i class="bi bi-share"></i> Share</button></div>
+  <div class="comments d-none mt-3"><form class="d-flex gap-2"><input class="form-control" placeholder="Write a comment" aria-label="Comment"><button class="btn btn-brand">Send</button></form></div>
+</div></article>
+  </section>
+
+  <aside class="col-lg-3 d-none d-lg-block"><div class="card side"><div class="card-body">
+    <div class="d-flex justify-content-between mb-2"><h6 class="mb-0">Friend requests</h6><a class="small" href="friend-requests.html">See all</a></div>
+    <div class="person removable"><span class="av" style="--h:300">N</span><div class="flex-grow-1"><a class="name" href="profile.html">Nour Ali</a><small class="muted d-block">@nour</small></div><div class="d-flex gap-2"><button class="btn btn-brand btn-sm" data-toggle="Follow|Following">Follow</button></div></div>
+    <div class="person removable"><span class="av" style="--h:20">K</span><div class="flex-grow-1"><a class="name" href="profile.html">Karim Adel <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><small class="muted d-block">@karim</small></div><div class="d-flex gap-2"><button class="btn btn-brand btn-sm" data-toggle="Follow|Following">Follow</button></div></div>
+    <h6 class="mt-3">People you may know</h6>
+    <div class="person removable"><span class="av" style="--h:150">S</span><div class="flex-grow-1"><a class="name" href="profile.html">Sara Nabil</a><small class="muted d-block">@sara</small></div><div class="d-flex gap-2"><button class="btn btn-brand btn-sm" data-toggle="Follow|Following">Follow</button></div></div>
+  </div></div></aside>
+</div></main>
+
+<!-- Create story -->
+<div class="modal fade" id="createStory" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><form class="modal-content" method="post" enctype="multipart/form-data">
+  <div class="modal-header border-0"><h5 class="modal-title">Create story</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+  <div class="modal-body pt-0">
+    <div class="story-draft mb-3"><div class="preview d-none"><img alt=""><video muted loop autoplay></video></div><p class="draft-text">Your text appears here</p></div>
+    <textarea id="storyCaption" name="caption" class="form-control mb-3" rows="2" maxlength="120" placeholder="Add text to your story"></textarea>
+    <div class="d-flex align-items-center gap-2">
+      <label class="chip"><i class="bi bi-image"></i> Photo / video<input type="file" name="media" accept="image/*,video/*" hidden></label>
+      <span class="ms-auto d-flex gap-2" title="Background">
+        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#6c4cf1,#ff5fa2)" style="background:linear-gradient(135deg,#6c4cf1,#ff5fa2)" checked>
+        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#f7b267,#f4845f)" style="background:linear-gradient(135deg,#f7b267,#f4845f)">
+        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#84c7a5,#3d8b74)" style="background:linear-gradient(135deg,#84c7a5,#3d8b74)">
+        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#232526,#414345)" style="background:linear-gradient(135deg,#232526,#414345)"></span></div>
+  </div>
+  <div class="modal-footer border-0"><button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand px-4">Share story</button></div>
+</form></div></div>
+
+<!-- Story viewer -->
+<div id="storyViewer" class="sv d-none"><div class="sv-card">
+  <div class="sv-top"><div class="sv-bars"></div><div class="d-flex align-items-center gap-2"><span class="sv-av"></span><b class="sv-user"></b><small class="sv-time opacity-75"></small><button class="sv-close" aria-label="Close">&times;</button></div></div>
+  <div class="sv-media"></div><p class="sv-text"></p>
+  <button class="sv-nav prev" aria-label="Previous"></button><button class="sv-nav next" aria-label="Next"></button>
+</div></div>
+<!-- Messages panel: opens from the navbar chat icon. Esc = back to the list, Esc again = close. -->
+<aside id="msgPanel" class="msg-panel card d-none" aria-label="Messages">
+    <div class="msg-lobby">
+      <div class="msg-head"><h6 class="mb-0">Messages</h6><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="px-3 pb-2"><input class="form-control rounded-pill" placeholder="Search people" aria-label="Search people"></div>
+      <div class="msg-users">
+        <button class="msg-item unread" type="button" data-chat="#c-lina"><span class="av" style="--h:330">L</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></b><small class="muted">Thank you, Lina! Your photos are inspiring.</small></span><small class="muted">2m</small></button>
+        <button class="msg-item" type="button" data-chat="#c-omar"><span class="av" style="--h:200">O</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Omar Khaled</b><small class="muted">Can you review my pull request today?</small></span><small class="muted">1h</small></button>
+        <button class="msg-item" type="button" data-chat="#c-sara"><span class="av" style="--h:150">S</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Sara Nabil</b><small class="muted">No messages yet</small></span><small class="muted"></small></button>
+      </div>
+    </div>
+    <section class="msg-conv d-none" id="c-lina">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:330">L</span><a class="name flex-grow-1" href="profile.html">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><div class="d-flex"><div class="bubble">Hey! Loved your latest post.</div></div><div class="d-flex"><div class="bubble me">Thank you, Lina! Your photos are inspiring.</div></div></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+    <section class="msg-conv d-none" id="c-omar">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:200">O</span><a class="name flex-grow-1" href="profile.html">Omar Khaled</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><div class="d-flex"><div class="bubble">Can you review my pull request today?</div></div></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+    <section class="msg-conv d-none" id="c-sara">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:150">S</span><a class="name flex-grow-1" href="profile.html">Sara Nabil</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><p class="text-center muted mt-5">No messages yet. Say hello!</p></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+  </aside>
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="assets/js/app.js"></script>
+</body></html>

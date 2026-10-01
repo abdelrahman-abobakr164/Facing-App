@@ -1,0 +1,55 @@
+{% load static %}
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.dataset.bsTheme=localStorage.theme||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")</script>
+<link href="{% static 'assets/vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+<link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+<title>{% block title %}{% endblock title %} | Facing</title>
+</head>
+<body>
+
+
+
+
+
+
+
+{% include 'navbar.html' %}
+{% block body %}
+
+{% endblock body %}
+
+
+
+<aside id="msgPanel" class="msg-panel card d-none" aria-label="Messages">
+    <div class="msg-lobby">
+      <div class="msg-head"><h6 class="mb-0">Messages</h6><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="px-3 pb-2"><input class="form-control rounded-pill" placeholder="Search people" aria-label="Search people"></div>
+      <div class="msg-users">
+        <button class="msg-item unread" type="button" data-chat="#c-lina"><span class="av" style="--h:330">L</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></b><small class="muted">Thank you, Lina! Your photos are inspiring.</small></span><small class="muted">2m</small></button>
+        <button class="msg-item" type="button" data-chat="#c-omar"><span class="av" style="--h:200">O</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Omar Khaled</b><small class="muted">Can you review my pull request today?</small></span><small class="muted">1h</small></button>
+        <button class="msg-item" type="button" data-chat="#c-sara"><span class="av" style="--h:150">S</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Sara Nabil</b><small class="muted">No messages yet</small></span><small class="muted"></small></button>
+      </div>
+    </div>
+    <section class="msg-conv d-none" id="c-lina">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:330">L</span><a class="name flex-grow-1" href="profile.html">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><div class="d-flex"><div class="bubble">Hey! Loved your latest post.</div></div><div class="d-flex"><div class="bubble me">Thank you, Lina! Your photos are inspiring.</div></div></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+    <section class="msg-conv d-none" id="c-omar">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:200">O</span><a class="name flex-grow-1" href="profile.html">Omar Khaled</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><div class="d-flex"><div class="bubble">Can you review my pull request today?</div></div></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+    <section class="msg-conv d-none" id="c-sara">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:150">S</span><a class="name flex-grow-1" href="profile.html">Sara Nabil</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><p class="text-center muted mt-5">No messages yet. Say hello!</p></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+  </aside>
+  <script src="{% static 'assets/vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/app.js' %}"></script>
+</body>
+</html>

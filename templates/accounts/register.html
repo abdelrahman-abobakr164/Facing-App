@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.dataset.bsTheme=localStorage.theme||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")</script>
+<link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="assets/vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
+<link href="assets/css/style.css" rel="stylesheet">
+<title>Sign up | Facing</title>
+</head>
+<body>
+<main class="container auth-wrap"><div class="row w-100 justify-content-center"><div class="col-md-7 col-lg-5">
+  <div class="text-center mb-4"><div class="brand fs-1"><i class="bi bi-lightning-charge-fill"></i> Facing</div><p class="muted">Create your account in a minute.</p></div>
+  <form class="card auth-card needs-validation" method="post" novalidate><div class="row g-3">
+    <div class="col-6"><label class="form-label" for="first">First name</label><input class="form-control" id="first" name="first_name" required></div>
+    <div class="col-6"><label class="form-label" for="last">Last name</label><input class="form-control" id="last" name="last_name" required></div>
+    <div class="col-12"><label class="form-label" for="email">Email</label><input type="email" class="form-control" id="email" name="email" required><div class="invalid-feedback">Enter a valid email.</div></div>
+    <div class="col-12"><label class="form-label" for="password">Password</label><input type="password" class="form-control" id="password" name="password1" minlength="8" required><div class="invalid-feedback">At least 8 characters.</div></div>
+    <div class="col-12"><label class="form-label" for="password2">Confirm password</label><input type="password" class="form-control" id="password2" name="password2" required></div>
+    <div class="col-12"><button class="btn btn-brand w-100 py-2">Sign up</button></div></div>
+    <p class="text-center small mt-3 mb-0">Already have an account? <a href="login.html">Log in</a></p>
+  </form></div></div></main>
+<script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="assets/js/app.js"></script>
+</body></html>

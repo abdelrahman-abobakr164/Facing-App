@@ -1,0 +1,26 @@
+<nav class="topbar sticky-top"><div class="container d-flex align-items-center gap-3">
+  <a class="brand" href="index.html"><i class="bi bi-lightning-charge-fill"></i> Facing</a>
+  <form class="search d-none d-md-flex"><i class="bi bi-search muted"></i><input placeholder="Search people, posts..." aria-label="Search"></form>
+  <div class="ms-auto d-flex align-items-center gap-1">
+    <a class="nav-i" data-p="feed" href="index.html" title="Home"><i class="bi bi-house-door"></i></a>
+    <a class="nav-i" data-p="friends" href="friend-requests.html" title="Friend requests"><i class="bi bi-people"></i><b class="dot">3</b></a>
+    <button class="nav-i" type="button" id="msgToggle" title="Messages" aria-label="Messages" aria-expanded="false" aria-controls="msgPanel"><i class="bi bi-chat-dots"></i><b class="dot">1</b></button>
+    <a class="nav-i" data-p="notifications" href="notifications.html" title="Notifications"><i class="bi bi-bell"></i><b class="dot">2</b></a>
+    <button class="nav-i" type="button" data-theme-toggle title="Toggle theme"><i class="bi bi-moon-stars"></i></button>
+    <div class="dropdown ms-1">
+      {% if user.is_authenticated %}
+      <a href="#" data-bs-toggle="dropdown" aria-label="Account">      
+          <span class="av av-sm" id="avatarPrev"
+              style="--h:260;{% if user.img %}background-image:url('{{ user.img.url }}');background-size:cover;background-position:center;{% endif %}">
+              {% if not user.img %}{{ user.username|first|upper }}{% endif %}
+          </span> 
+      </a>
+      {% endif %}
+      <ul class="dropdown-menu dropdown-menu-end shadow-lg p-2">
+        <li><a class="dropdown-item" href="{% url 'profile' %}">My profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{% url 'account_logout' %}">Log out</a></li>
+      </ul></div>
+  </div></div>
+</nav>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.dataset.bsTheme=localStorage.theme||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")</script>
+<link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="assets/vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
+<link href="assets/css/style.css" rel="stylesheet">
+<title>Notifications | Facing</title>
+</head>
+<body>
+<nav class="topbar sticky-top"><div class="container d-flex align-items-center gap-3">
+  <a class="brand" href="index.html"><i class="bi bi-lightning-charge-fill"></i> Facing</a>
+  <form class="search d-none d-md-flex"><i class="bi bi-search muted"></i><input placeholder="Search people, posts..." aria-label="Search"></form>
+  <div class="ms-auto d-flex align-items-center gap-1">
+    <a class="nav-i" data-p="feed" href="index.html" title="Home"><i class="bi bi-house-door"></i></a>
+    <a class="nav-i" data-p="friends" href="friend-requests.html" title="Friend requests"><i class="bi bi-people"></i><b class="dot">3</b></a>
+    <button class="nav-i" type="button" id="msgToggle" title="Messages" aria-label="Messages" aria-expanded="false" aria-controls="msgPanel"><i class="bi bi-chat-dots"></i><b class="dot">1</b></button>
+    <a class="nav-i" data-p="notifications" aria-current="page" href="notifications.html" title="Notifications"><i class="bi bi-bell"></i><b class="dot">2</b></a>
+    <button class="nav-i" type="button" data-theme-toggle title="Toggle theme"><i class="bi bi-moon-stars"></i></button>
+    <div class="dropdown ms-1"><a href="#" data-bs-toggle="dropdown" aria-label="Account"><span class="av av-sm" style="--h:260">A</span></a>
+      <ul class="dropdown-menu dropdown-menu-end shadow-lg p-2">
+        <li><a class="dropdown-item" href="profile.html">My profile</a></li>
+        <li><a class="dropdown-item" href="followers.html">Followers &amp; following</a></li>
+        <li><a class="dropdown-item" href="settings.html">Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="login.html">Log out</a></li>
+      </ul></div>
+  </div></div></nav><main class="container py-4"><div class="row justify-content-center"><div class="col-lg-6">
+  <div class="d-flex justify-content-between align-items-center mb-3"><h4 class="mb-0">Notifications</h4>
+    <form method="post"><button class="btn btn-soft btn-sm">Mark all as read</button></form></div>
+  <div class="card overflow-hidden">
+    <a href="post-edit.html" class="notif unread"><span class="av" style="--h:330">L</span><div class="flex-grow-1"><b>Lina Hassan</b> <i class="bi bi-patch-check-fill verified" title="Verified"></i> liked your post<div class="small muted">5 min ago</div></div><span class="n-ico like"><i class="bi bi-heart-fill"></i></span></a>
+    <a href="followers.html" class="notif unread"><span class="av" style="--h:200">O</span><div class="flex-grow-1"><b>Omar Khaled</b> started following you<div class="small muted">40 min ago</div></div><span class="n-ico follow"><i class="bi bi-person-plus-fill"></i></span></a>
+    <a href="friend-requests.html" class="notif"><span class="av" style="--h:300">N</span><div class="flex-grow-1"><b>Nour Ali</b> sent you a friend request<div class="small muted">3 hours ago</div></div><span class="n-ico friend"><i class="bi bi-people-fill"></i></span></a>
+    <a href="index.html" class="notif"><span class="av" style="--h:150">S</span><div class="flex-grow-1"><b>Sara Nabil</b> viewed your story<div class="small muted">Yesterday</div></div><span class="n-ico view"><i class="bi bi-eye-fill"></i></span></a>
+  </div>
+</div></div></main>
+<!-- Messages panel: opens from the navbar chat icon. Esc = back to the list, Esc again = close. -->
+<aside id="msgPanel" class="msg-panel card d-none" aria-label="Messages">
+    <div class="msg-lobby">
+      <div class="msg-head"><h6 class="mb-0">Messages</h6><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="px-3 pb-2"><input class="form-control rounded-pill" placeholder="Search people" aria-label="Search people"></div>
+      <div class="msg-users">
+        <button class="msg-item unread" type="button" data-chat="#c-lina"><span class="av" style="--h:330">L</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></b><small class="muted">Thank you, Lina! Your photos are inspiring.</small></span><small class="muted">2m</small></button>
+        <button class="msg-item" type="button" data-chat="#c-omar"><span class="av" style="--h:200">O</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Omar Khaled</b><small class="muted">Can you review my pull request today?</small></span><small class="muted">1h</small></button>
+        <button class="msg-item" type="button" data-chat="#c-sara"><span class="av" style="--h:150">S</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Sara Nabil</b><small class="muted">No messages yet</small></span><small class="muted"></small></button>
+      </div>
+    </div>
+    <section class="msg-conv d-none" id="c-lina">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:330">L</span><a class="name flex-grow-1" href="profile.html">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><div class="d-flex"><div class="bubble">Hey! Loved your latest post.</div></div><div class="d-flex"><div class="bubble me">Thank you, Lina! Your photos are inspiring.</div></div></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+    <section class="msg-conv d-none" id="c-omar">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:200">O</span><a class="name flex-grow-1" href="profile.html">Omar Khaled</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><div class="d-flex"><div class="bubble">Can you review my pull request today?</div></div></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+    <section class="msg-conv d-none" id="c-sara">
+      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:150">S</span><a class="name flex-grow-1" href="profile.html">Sara Nabil</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
+      <div class="chat-box"><p class="text-center muted mt-5">No messages yet. Say hello!</p></div>
+      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
+    </section>
+  </aside>
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="assets/js/app.js"></script>
+</body></html>

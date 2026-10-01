@@ -1,0 +1,5 @@
+{
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "notebook.defaultFormatter": "ms-python.black-formatter",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
+}
