@@ -1,7 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from .forms import SettingsForm
+from accounts.forms import SettingsForm
+from django.db.models import Prefetch
+from posts.services import *
+from posts.models import *
 
 User = get_user_model()
 
@@ -22,5 +25,24 @@ def settings(request):
 
 
 @login_required
-def profile(request):
-    return render(request, "accounts/profile.html")
+def profile(request, id):
+    profile_user = get_object_or_404(User, id=id)
+    posts = (
+        Post.objects.filter(user=profile_user)
+        .select_related("user")
+        .prefetch_related(
+            "media",
+            Prefetch(
+                "comments",
+                Comment.objects.filter(parent=None).select_related("user", "parent"),
+                to_attr="none_parent_comment",
+            ),
+        )
+        .order_by("-created_at")
+    )
+
+    context = {
+        "posts": posts,
+        "profile_user": profile_user,
+    }
+    return render(request, "accounts/profile.html", context)

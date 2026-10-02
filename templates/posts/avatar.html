@@ -1,0 +1,2 @@
+{# usage: {% include 'includes/avatar.html' with u=comment.user size='av-sm' %} #}
+<span class="av {{ size }}" style="--h:260;{% if u.img %}background-image:url('{{ u.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not u.img %}{{ u.username|first|upper }}{% endif %}</span>

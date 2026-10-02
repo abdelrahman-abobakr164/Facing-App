@@ -5,54 +5,232 @@ Profile
 {% endblock title %}
 
 {% block body %}
-  <main class="container py-4">
+
+<style>
+  .c-bubble{background:var(--bs-tertiary-bg,#f1f2f6);border-radius:1rem;padding:.5rem .85rem;display:inline-block;max-width:100%;word-break:break-word}
+  .c-actions{display:flex;align-items:center;gap:.9rem;font-size:.8rem;padding:.2rem .5rem}
+  .c-btn{background:none;border:0;padding:0;font-weight:600;color:inherit;opacity:.7;cursor:pointer}
+  .c-btn:hover{opacity:1}
+  .c-like.active{color:#e0245e;opacity:1}
+  .c-like:disabled{cursor:wait}
+  .c-replies{margin-left:.5rem;border-left:2px solid var(--bs-border-color,#e5e7eb);padding-left:.75rem}
+  .c-toggle{font-size:.8rem;margin:.15rem .5rem}
+  .c-toggle .bi{display:inline-block;transition:transform .2s}
+  .c-toggle[aria-expanded="false"] .bi{transform:rotate(-90deg)}
+  .c-item:target > div > .c-bubble,
+  .c-reply:target > div > .c-bubble{outline:2px solid #6c4cf1}
+</style>
+
+<main class="container py-4">
   <div class="card mb-4"><div class="cover" style="background-image:linear-gradient(135deg,#6c4cf1,#ff5fa2)"></div>
     <div class="card-body pt-0"><div class="profile-top d-flex flex-wrap align-items-end gap-3">
-      
       <span class="av av-xl" id="avatarPrev"
-            style="--h:260;{% if user.img %}background-image:url('{{ user.img.url }}');background-size:cover;background-position:center;{% endif %}">
-        {% if not user.img %}{{ user.username|first|upper }}{% endif %}
+            style="--h:260;{% if profile_user.img %}background-image:url('{{ profile_user.img.url }}');background-size:cover;background-position:center;{% endif %}">
+        {% if not profile_user.img %}{{ profile_user.username|first|upper }}{% endif %}
       </span>
-      <div class="flex-grow-1 pb-2"><h4 class="mb-0">{{user.fullname}} {% if user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</h4><div class="muted">@{{user.username}}</div></div>
+      <div class="flex-grow-1 pb-2"><h4 class="mb-2">{{ profile_user.username }} {% if profile_user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</h4></div>
       <div class="pb-2 d-flex gap-2"><a class="btn btn-soft" href="settings.html"><i class="bi bi-person-plus-fill"></i> Follow</a></div></div>
-      <p class="mt-3 mb-2">{{user.bio|default:" "}}</p>
+      <p class="mt-3 mb-2">{{ profile_user.bio|default:" " }}</p>
       <div class="d-flex flex-wrap gap-4 small"><span><b>12</b> posts</span><a class="text-reset" href="followers.html"><b>248</b> followers</a><a class="text-reset" href="followers.html#following"><b>191</b> following</a></div>
-      <hr><div class="d-flex flex-wrap gap-2"><span class="chip">{% if user.location %} <i class="bi bi-geo-alt"></i> {{user.location}}</span>{% endif %}<span class="chip"><i class="bi bi-calendar3"></i> Joined {{user.date_joined|date:'o'}}</span></div>
+      <hr>
+      <div class="d-flex flex-wrap gap-2">
+        {% if profile_user.location %}<span class="chip"><i class="bi bi-geo-alt"></i> {{ profile_user.location }}</span>{% endif %}
+        <span class="chip"><i class="bi bi-calendar3"></i> Joined {{ profile_user.date_joined|date:'Y' }}</span>
+      </div>
     </div>
   </div>
 
   <div class="row justify-content-center"><div class="col-lg-7">
-    <article class="card mb-3"><div class="card-body">
-  <div class="d-flex align-items-center gap-2 mb-3"><a href="profile.html"><span class="av" style="--h:260">A</span></a>
-    <div class="flex-grow-1"><a class="name" href="profile.html">Alex Morgan</a><div class="small muted">@alexm &middot; 5 hours ago</div></div>
-    <div class="dropdown"><button class="action" data-bs-toggle="dropdown" aria-label="Post menu"><i class="bi bi-three-dots"></i></button>
-      <ul class="dropdown-menu dropdown-menu-end p-2">
-        <li><a class="dropdown-item" href="post-edit.html"><i class="bi bi-pencil me-2"></i>Edit post</a></li>
-        <li><form method="post"><button class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Delete post</button></form></li>
-      </ul>
-    </div>
-  </div>
-  <p>Behind the scenes of our new onboarding flow. Feedback is welcome!</p>
-  <div class="media mb-2" style="background-image:linear-gradient(135deg,#9fb4f5,#6b6fd6)" role="img" aria-label="Post video"><span class="play"><i class="bi bi-play-circle-fill"></i></span></div>
-    <div class="d-flex gap-1 border-top pt-2">
-      <button class="action like active"><i class="bi bi-heart-fill"></i> <span>15</span></button>
-      <button class="action js-comment"><i class="bi bi-chat"></i> <span>0</span></button>
-      <button class="action ms-auto"><i class="bi bi-share"></i> Share</button></div>
-    <div class="comments d-none mt-3"><form class="d-flex gap-2"><input class="form-control" placeholder="Write a comment" aria-label="Comment"><button class="btn btn-brand">Send</button></form></div>
-  </div>
-</article>
-    <article class="card mb-3"><div class="card-body">
-  <div class="d-flex align-items-center gap-2 mb-3"><a href="profile.html"><span class="av" style="--h:330">L</span></a>
-    <div class="flex-grow-1"><a class="name" href="profile.html">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><div class="small muted">@lina &middot; 12 min ago</div></div></div>
-  <p>Golden hour at the Corniche today. Sometimes the best shots are the ones you did not plan.</p>
-  <div class="media mb-2" style="background-image:linear-gradient(135deg,#f7b267,#f4845f)" role="img" aria-label="Post photo"></div>
-  <div class="d-flex gap-1 border-top pt-2">
-    <button class="action like"><i class="bi bi-heart"></i> <span>42</span></button>
-    <button class="action js-comment"><i class="bi bi-chat"></i> <span>1</span></button>
-    <button class="action ms-auto"><i class="bi bi-share"></i> Share</button></div>
-  <div class="comments d-none mt-3"><div class="d-flex gap-2 mb-2"><span class="av av-sm" style="--h:200">O</span><div class="bubble mb-0"><b class="small">Omar</b><div>Stunning colors!</div></div></div>
-    <form class="d-flex gap-2 mt-2"><input class="form-control" placeholder="Write a comment" aria-label="Comment"><button class="btn btn-brand">Send</button></form></div>
-</div></article>
+
+  {% for post in posts %}
+    <article class="card mb-3" id="post-{{ post.pk }}">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="av av-sm" style="--h:260;{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span>
+          <div>
+            <b>{{ post.user.username }} {% if post.user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</b>
+            <div class="small muted">{{ post.created_at|timesince }} ago</div>
+          </div>
+        </div>
+
+        {% if post.media.all %}
+          {% if post.caption %}<p>{{ post.caption|linebreaksbr }}</p>{% endif %}
+          {% for media in post.media.all %}
+            {% if media.media_type == "image" %}
+              <img class="media mb-2 " style='width:100%; height:100%' src="{{ media.file.url }}" alt="Post photo" loading="lazy"
+                  style="max-height:520px;object-fit:cover;">
+            {% elif media.media_type == "video" %}
+              <video class="media mb-2 w-100" controls preload="metadata" style="max-height:520px;">
+                <source src="{{ media.file.url }}">
+              </video>
+            {% endif %}
+          {% endfor %}
+
+          {% else %}
+          <p>{{ post.body|linebreaksbr }}</p>
+        {% endif %}
+
+        <div class="d-flex gap-1 border-top pt-2">
+          <form method="post" action="" class="js-like-form">
+            {% csrf_token %}
+            <button class="action like {% if post.pk in liked_posts %}active{% endif %}">
+              <i class="bi {% if post.pk in liked_posts %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+              <span>{{ post.like_count }}</span>
+            </button>
+          </form>
+          <button type="button" class="action js-comment"><i class="bi bi-chat"></i> <span>{{ post.comments_count }}</span></button>
+          <button type="button" class="action ms-auto"><i class="bi bi-share"></i> Share</button>
+        </div>
+
+        <div class="comments d-none mt-3">
+
+          {% for comment in post.none_parent_comment %}
+            {% with replies=comment.replies.all %}
+            <div class="c-item d-flex gap-2 mb-3" id="comment-{{ comment.pk }}">
+              <span class="av av-sm flex-shrink-0" style="--h:260;{% if comment.user.img %}background-image:url('{{ comment.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not comment.user.img %}{{ comment.user.username|first|upper }}{% endif %}</span>
+
+              <div class="flex-grow-1" style="min-width:0">
+                <div class="c-bubble">
+                  <b>{{ comment.user.username }}</b>
+                  {% if comment.user.verified %}<i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}
+                  <div>{{ comment.body|linebreaksbr }}</div>
+                </div>
+
+                <div class="c-actions muted">
+                  <span>{{ comment.created_at|timesince }}</span>
+                  <button type="button"
+                          class="c-btn c-like js-comment-like {% if comment.pk in liked_comments %}active{% endif %}"
+                          data-url="" aria-label="Like comment">
+                    <i class="bi {% if comment.pk in liked_comments %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                    <span>{{ comment.like_count }}</span>
+                  </button>
+                  <button type="button" class="c-btn js-reply" data-target="reply-box-{{ comment.pk }}">Reply</button>
+                </div>
+
+                <div class="c-reply-box d-none mt-1" id="reply-box-{{ comment.pk }}">
+                  <form method="POST" action="{% url 'add_comment' post.id  %}" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="parent" value="{{ comment.id }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    
+                    <input class="form-control form-control-sm" name="body"
+                           placeholder="Reply to {{ comment.user.username }}…" aria-label="Reply" required maxlength="1000">
+                    <button class="btn btn-brand btn-sm" type='submit'>Reply</button>
+                  </form>
+                </div>
+
+                {% if replies %}
+                  <button type="button" class="c-btn c-toggle js-toggle-replies" aria-expanded="true"
+                          data-target="replies-{{ comment.pk }}" data-count="{{ replies|length }}">
+                    <i class="bi bi-chevron-down"></i> <span class="c-toggle-text">Hide replies</span>
+                  </button>
+
+                  <div class="c-replies mt-2" id="replies-{{ comment.pk }}">
+                    {% for reply in replies %}
+                      <div class="c-reply d-flex gap-2 mb-3" id="comment-{{ reply.pk }}">
+                        <span class="av av-sm flex-shrink-0" style="--h:260;{% if reply.user.img %}background-image:url('{{ reply.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not reply.user.img %}{{ reply.user.username|first|upper }}{% endif %}</span>
+
+                        <div class="flex-grow-1" style="min-width:0">
+                          <div class="c-bubble">
+                            <b>{{ reply.user.username }}</b>
+                            {% if reply.user.verified %}<i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}
+                            <div>{{ reply.body|linebreaksbr }}</div>
+                          </div>
+
+                          <div class="c-actions muted">
+                            <span>{{ reply.created_at|timesince }}</span>
+                            <button type="button"
+                                    class="c-btn c-like js-comment-like {% if reply.pk in liked_comments %}active{% endif %}"
+                                    data-url="" aria-label="Like reply">
+                              <i class="bi {% if reply.pk in liked_comments %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                              <span>{{ reply.like_count }}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endwith %}
+          {% endfor %}
+
+          <form method="POST" action="{% url 'add_comment' post.id  %}" class="d-flex gap-2 mt-2">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <input class="form-control" name="body" placeholder="Write a comment" aria-label="Comment" required maxlength="1000">
+            <button class="btn btn-brand">Send</button>
+          </form>
+        </div>
+      </div>
+    </article>
+  {% endfor %}
   </div></div>
 </main>
+
+<script>
+(function () {
+  const csrf = () => document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+  document.addEventListener('click', async (e) => {
+
+    // 1) Reply button -> show / hide the reply input
+    const replyBtn = e.target.closest('.js-reply');
+    if (replyBtn) {
+      const box = document.getElementById(replyBtn.dataset.target);
+      const opened = box.classList.toggle('d-none') === false;
+      if (opened) {
+        const input = box.querySelector('input[name=body]');
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+      return;
+    }
+
+    // 2) Toggle button -> collapse / expand all replies of the comment
+    const toggle = e.target.closest('.js-toggle-replies');
+    if (toggle) {
+      const list = document.getElementById(toggle.dataset.target);
+      const expanded = list.classList.toggle('d-none') === false;
+      const n = toggle.dataset.count;
+      toggle.setAttribute('aria-expanded', expanded);
+      toggle.querySelector('.c-toggle-text').textContent =
+        expanded ? 'Hide replies' : `View ${n} ${n === '1' ? 'reply' : 'replies'}`;
+      return;
+    }
+
+    // 3) Like a comment or a reply
+    const likeBtn = e.target.closest('.js-comment-like');
+    if (likeBtn) {
+      likeBtn.disabled = true;
+      try {
+        const res = await fetch(likeBtn.dataset.url, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        likeBtn.classList.toggle('active', data.liked);
+        likeBtn.querySelector('i').className = 'bi ' + (data.liked ? 'bi-heart-fill' : 'bi-heart');
+        likeBtn.querySelector('span').textContent = data.count;
+      } catch (err) {
+        console.error('Like failed:', err);
+      } finally {
+        likeBtn.disabled = false;
+      }
+    }
+  });
+
+  // After posting a comment/reply the page reloads with #comment-<id>: open the panel and scroll to it
+  if (location.hash.startsWith('#comment-')) {
+    const target = document.querySelector(location.hash);
+    if (target) {
+      target.closest('.comments')?.classList.remove('d-none');
+      target.scrollIntoView({ block: 'center' });
+    }
+  }
+})();
+</script>
+
 {% endblock body %}

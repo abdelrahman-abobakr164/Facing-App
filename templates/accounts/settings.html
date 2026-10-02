@@ -82,7 +82,7 @@
 
       <div class="d-flex gap-2 mt-4">
         <button type="submit" class="btn btn-brand px-4">Save changes</button>
-        <a class="btn btn-soft" href="{% url 'profile' %}">Cancel</a>
+        <a class="btn btn-soft" href="{% url 'profile' user.id %}">Cancel</a>
       </div>
     </div>
   </form>

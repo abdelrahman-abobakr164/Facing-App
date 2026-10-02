@@ -102,3 +102,15 @@ background:linear-gradient(135deg,hsl(var(--h) 70% 55%),hsl(calc(var(--h) + 40) 
 .n-ico{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none}
 .n-ico.like{background:rgba(255,95,162,.15);color:var(--brand2)}.n-ico.follow{background:rgba(108,76,241,.15);color:var(--brand)}
 .n-ico.friend{background:rgba(32,201,151,.15);color:#20c997}.n-ico.view{background:var(--soft);color:var(--muted)}
+.comment-form{display:flex;align-items:center;gap:.6rem;margin-bottom:1.1rem}
+.comment-form .form-control,.reply-form .form-control{border-radius:999px}
+.btn-send{width:40px;height:40px;padding:0;border-radius:50%;display:grid;place-items:center;flex:none}
+.thread{margin-bottom:1rem}
+.comment{display:flex;gap:.6rem}.c-main{min-width:0}
+.c-bubble{display:inline-block;max-width:100%;background:var(--soft);border-radius:4px 16px 16px 16px;padding:.5rem .9rem}
+.c-text{overflow-wrap:anywhere;font-size:.95rem}
+.c-meta{display:flex;align-items:center;gap:1rem;margin:.25rem 0 0 .6rem;font-size:.78rem;color:var(--muted)}
+.c-btn{background:none;border:0;padding:0;font-size:inherit;font-weight:600;color:var(--muted)}
+.c-btn:hover{color:var(--brand)}.c-btn.like.active{color:var(--brand2)}
+.replies{display:flex;flex-direction:column;gap:.7rem;margin:.7rem 0 0 2.5rem;padding-left:.9rem;border-left:2px solid var(--line)}
+.reply-form{display:flex;align-items:center;gap:.5rem;margin:.7rem 0 0 2.5rem}

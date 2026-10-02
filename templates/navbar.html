@@ -19,7 +19,7 @@
           </span> 
       </a>
       <ul class="dropdown-menu dropdown-menu-end shadow-lg p-2">
-        <li><a class="dropdown-item" href="{% url 'profile' %}">My profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'profile' user.id %}">My profile</a></li>
         <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item" href="{% url 'account_logout' %}">Log out</a></li>
