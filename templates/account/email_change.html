@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Email Address{% endblock title %}
+{% block body %}
+<main class="container py-4"><div class="row justify-content-center"><div class="col-lg-5">
+  <a class="small muted" href="javascript:history.back()"><i class="bi bi-arrow-left"></i> Back</a>
+  <h4 class="my-3">Email address</h4>
+
+  {% if not emailaddresses %}
+    <div class="alert alert-warning small">You do not have an email address on your account yet. Add one to receive notifications and reset your password.</div>
+  {% endif %}
+
+  <form class="card mb-3" method="post" action="{% url 'account_email' %}"><div class="card-body p-4">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger small">{{ form.non_field_errors }}</div>{% endif %}
+
+    <div class="mb-3">
+      <label class="form-label" for="current_email">Current email</label>
+      <input id="current_email" class="form-control" type="email" value="{{ current_emailaddress.email|default:user.email }}" disabled>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="{{ form.email.auto_id }}">Change to</label>
+      <input id="{{ form.email.auto_id }}" name="email" type="email" autocomplete="email" required
+             class="form-control {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}">
+      {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+    </div>
+
+    <button class="btn btn-brand px-4" type="submit" name="action_add">Change email</button>
+  </div></form>
+
+  {% if new_emailaddress %}
+    <div class="card"><div class="card-body p-4">
+      <div class="d-flex gap-3 mb-3">
+        <span class="n-ico friend"><i class="bi bi-envelope-check"></i></span>
+        <div>
+          <h6 class="mb-1">Verify your new email</h6>
+          <p class="small muted mb-0">We sent a verification message to <b>{{ new_emailaddress.email }}</b>. Your email will not change until you verify it.</p>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-soft btn-sm" type="submit" form="pending-email" name="action_send">Re-send verification</button>
+        {% if current_emailaddress %}
+          <button class="btn btn-soft btn-sm text-danger" type="submit" form="pending-email" name="action_remove">Cancel change</button>
+        {% endif %}
+      </div>
+    </div></div>
+
+    <form id="pending-email" method="post" action="{% url 'account_email' %}" hidden>
+      {% csrf_token %}
+      <input type="hidden" name="email" value="{{ new_emailaddress.email }}">
+    </form>
+  {% endif %}
+</div></div></main>
+{% endblock body %}

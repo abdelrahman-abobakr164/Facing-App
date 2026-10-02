@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Signup{% endblock title %}
+{% block body %}
+<main class="container auth-wrap"><div class="row w-100 justify-content-center"><div class="col-md-7 col-lg-5">
+  <div class="text-center mb-4"><div class="brand fs-1"><i class="bi bi-lightning-charge-fill"></i> Facing</div><p class="muted">Create your account in a minute.</p></div>
+  <div  class="card auth-card needs-validation" >
+  <form method="POST" action="{% url 'account_signup' %}"><div class="row g-3">
+    {% csrf_token %}
+    
+    <div class="col-12">
+      <label class="form-label" for="email">Email</label><input type="email" class="form-control" id="email" name="email" required><div class="invalid-feedback">Enter a valid email.</div></div>
+       {{ form.email.errors }}
+    <div class="col-12">
+      <label class="form-label" for="id_username">Username</label><input class="form-control" id="id_username" name="username" required></div>
+      {{ form.username.errors }}
+    <div class="col-12">
+      <label class="form-label" for="id_password">Password</label><input type="password" class="form-control" id="id_password" name="password1" minlength="8" required><div class="invalid-feedback">At least 8 characters.</div></div>
+      {{ form.password1.errors }}
+    <div class="col-12">
+      <label class="form-label" for="id_password2">Confirm password</label><input type="password" class="form-control" id="id_password2" name="password2" required></div>
+      {{ form.password2.errors }}
+    <div class="col-12"><button class="btn btn-brand w-100 py-2" type='submit'>Sign up</button></div></div>
+    <p class="text-center small mt-3 mb-3">Already have an account? <a href="{% url 'account_login' %}">Log in</a></p>
+  </form>
+  <form method="POST" action="{% url 'google_login' %}">
+      {% csrf_token %}
+      <button type='submit' class="form-control text-left style2-input text-white fw-600  border-0 p-0 mb-2">
+          <img src="{% static 'icon-1.png' %}" alt="icon" style='width: 30px;' class="ms-2 mt-1 w10 mb-1 me-3"> Sign up with Google
+      </button>
+  </form> 
+  </div>
+</div></div>
+</main>
+{% endblock body %}

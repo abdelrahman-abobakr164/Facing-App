@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Sign Out{% endblock title %}
+{% block body %}
+<main class="container auth-wrap"><div class="row w-100 justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="text-center mb-4"><div class="brand fs-1"><i class="bi bi-lightning-charge-fill"></i> Facing</div><p class="muted">Are you sure you want to sign out?</p></div>
+
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                <button class='form-control' type="submit">Sign Out</button> 
+            </form>
+
+        </div>
+    </div>
+</main>
+{% endblock body %}

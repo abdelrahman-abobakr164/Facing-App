@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock title %}
+{% block body %}
+<main class="container auth-wrap"><div class="row w-100 justify-content-center"><div class="col-md-6 col-lg-4">
+  <div class="text-center mb-4"><div class="brand fs-1"><i class="bi bi-lightning-charge-fill"></i> Facing</div><p class="muted">Log in to see what your friends are sharing.</p></div>
+  <form class="card auth-card needs-validation" method="POST" action='{% url "account_login" %}'>
+    {% csrf_token %}
+    <div class="mb-3"><label class="form-label" for="id_login">Email</label><input type="email" class="form-control" id="id_login" name="login" required><div class="invalid-feedback">Enter a valid email.</div></div>
+    <div class="mb-3"><label class="form-label" for="id_password">Password</label><input type="password" class="form-control" id="id_password" name="password" required><div class="invalid-feedback">Enter your password.</div></div>
+    <button class="btn btn-brand w-100 py-2" type='submit'>Log in</button>
+      <p class="text-center small mt-3 mb-0"><a href="{% url 'account_reset_password' %}">Forgot Password?</a></p>
+      <p class="text-center small mt-3">New here? <a href="{% url 'account_signup' %}">Create an account</a></p>
+  </form></div></div></main>
+{% endblock body %}

@@ -16,24 +16,6 @@ class SettingsForm(forms.ModelForm):
             }
         ),
     )
-    first_name = forms.CharField(
-        required=True,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "First Name...",
-            }
-        ),
-    )
-    last_name = forms.CharField(
-        required=True,
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "placeholder": "Last Name...",
-            }
-        ),
-    )
     bio = forms.CharField(
         required=False,
         widget=forms.Textarea(
@@ -66,8 +48,6 @@ class SettingsForm(forms.ModelForm):
     class Meta:
         model = User
         fields = [
-            "first_name",
-            "last_name",
             "username",
             "img",
             "bio",
