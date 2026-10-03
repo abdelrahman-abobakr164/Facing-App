@@ -1,8 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Prefetch, Count, Exists, OuterRef
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.views.decorators.http import require_POST
 from accounts.forms import SettingsForm
-from django.db.models import Prefetch
 from posts.services import *
 from posts.models import *
 
@@ -34,9 +35,24 @@ def profile(request, id):
             "media",
             Prefetch(
                 "comments",
-                Comment.objects.filter(parent=None).select_related("user", "parent"),
+                Comment.objects.filter(parent=None)
+                .select_related("user")
+                .annotate(
+                    is_liked=Exists(CommentLike.objects.filter(comment=OuterRef("id")))
+                )
+                .prefetch_related(
+                    Prefetch(
+                        "replies",
+                        Comment.objects.select_related("user").order_by("-created_at"),
+                    )
+                ),
                 to_attr="none_parent_comment",
             ),
+        )
+        .annotate(
+            is_liked=Exists(
+                PostLike.objects.filter(post=OuterRef("id"), user=request.user)
+            )
         )
         .order_by("-created_at")
     )

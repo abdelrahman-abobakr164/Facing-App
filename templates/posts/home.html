@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% block title %}Feed{% endblock title %}
 {% block body %}
 <main class="container py-4"><div class="row g-4">
   <aside class="col-lg-3 d-none d-lg-block"><div class="card side"><div class="card-body text-center">
@@ -30,33 +31,144 @@
         <label class="chip"><i class="bi bi-camera-video"></i> Video<input type="file" name="video" accept="video/*" hidden></label>
         <button class="btn btn-brand ms-auto px-4">Post</button></div>
     </div></form>
-    <article class="card mb-3"><div class="card-body">
-  <div class="d-flex align-items-center gap-2 mb-3"><a href="profile.html"><span class="av" style="--h:330">L</span></a>
-    <div class="flex-grow-1"><a class="name" href="profile.html">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><div class="small muted">@lina &middot; 12 min ago</div></div></div>
-  <p>Golden hour at the Corniche today. Sometimes the best shots are the ones you did not plan.</p>
-  <div class="media mb-2" style="background-image:linear-gradient(135deg,#f7b267,#f4845f)" role="img" aria-label="Post photo"></div>
-  <div class="d-flex gap-1 border-top pt-2">
-    <button class="action like"><i class="bi bi-heart"></i> <span>42</span></button>
-    <button class="action js-comment"><i class="bi bi-chat"></i> <span>1</span></button>
-    <button class="action ms-auto"><i class="bi bi-share"></i> Share</button></div>
-  <div class="comments d-none mt-3"><div class="d-flex gap-2 mb-2"><span class="av av-sm" style="--h:200">O</span><div class="bubble mb-0"><b class="small">Omar</b><div>Stunning colors!</div></div></div>
-    <form class="d-flex gap-2 mt-2"><input class="form-control" placeholder="Write a comment" aria-label="Comment"><button class="btn btn-brand">Send</button></form></div>
-</div></article>
-    <article class="card mb-3"><div class="card-body">
-  <div class="d-flex align-items-center gap-2 mb-3"><a href="profile.html"><span class="av" style="--h:260">A</span></a>
-    <div class="flex-grow-1"><a class="name" href="profile.html">Alex Morgan</a><div class="small muted">@alexm &middot; 5 hours ago</div></div>
-    <div class="dropdown"><button class="action" data-bs-toggle="dropdown" aria-label="Post menu"><i class="bi bi-three-dots"></i></button>
-      <ul class="dropdown-menu dropdown-menu-end p-2">
-        <li><a class="dropdown-item" href="post-edit.html"><i class="bi bi-pencil me-2"></i>Edit post</a></li>
-        <li><form method="post"><button class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Delete post</button></form></li></ul></div></div>
-  <p>Behind the scenes of our new onboarding flow. Feedback is welcome!</p>
-  <div class="media mb-2" style="background-image:linear-gradient(135deg,#9fb4f5,#6b6fd6)" role="img" aria-label="Post video"><span class="play"><i class="bi bi-play-circle-fill"></i></span></div>
-  <div class="d-flex gap-1 border-top pt-2">
-    <button class="action like active"><i class="bi bi-heart-fill"></i> <span>15</span></button>
-    <button class="action js-comment"><i class="bi bi-chat"></i> <span>0</span></button>
-    <button class="action ms-auto"><i class="bi bi-share"></i> Share</button></div>
-  <div class="comments d-none mt-3"><form class="d-flex gap-2"><input class="form-control" placeholder="Write a comment" aria-label="Comment"><button class="btn btn-brand">Send</button></form></div>
-</div></article>
+    {% for post in posts %}
+      <article class="card mb-3" id="post-{{ post.pk }}">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="av av-sm" style="--h:260;{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span>
+            <div>
+              <b>{{ post.user.username }} {% if post.user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</b>
+              <div class="small muted">{{ post.created_at|timesince }} ago</div>
+            </div>
+          </div>
+
+          {% if post.media.all %}
+            {% if post.caption %}<p>{{ post.caption|linebreaksbr }}</p>{% endif %}
+            {% for media in post.media.all %}
+              {% if media.media_type == "image" %}
+                <img class="media mb-2 " style='width:100%; height:100%' src="{{ media.file.url }}" alt="Post photo" loading="lazy"
+                    style="max-height:520px;object-fit:cover;">
+              {% elif media.media_type == "video" %}
+                <video class="media mb-2 w-100" controls preload="metadata" style="max-height:520px;">
+                  <source src="{{ media.file.url }}">
+                </video>
+              {% endif %}
+            {% endfor %}
+
+            {% else %}
+            <p>{{ post.body|linebreaksbr }}</p>
+          {% endif %}
+
+          <div class="d-flex gap-1 border-top pt-2">
+            <form method="POST" action="{% url 'toggle-like' 'post' post.id %}" class="js-like-form">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button class="action like {% if post.is_liked %}active{% endif %}">
+                <i class="bi {% if post.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                <span>{{ post.like_count }}</span>
+              </button>
+            </form>
+            <button type="button" class="action js-comment"><i class="bi bi-chat"></i> <span>{{ post.comments_count }}</span></button>
+            <button type="button" class="action ms-auto"><i class="bi bi-share"></i> Share</button>
+          </div>
+
+          <div class="comments d-none mt-3">
+
+            {% for comment in post.none_parent_comment %}
+              {% with replies=comment.replies.all %}
+              <div class="c-item d-flex gap-2 mb-3" id="comment-{{ comment.pk }}">
+                <span class="av av-sm flex-shrink-0" style="--h:260;{% if comment.user.img %}background-image:url('{{ comment.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not comment.user.img %}{{ comment.user.username|first|upper }}{% endif %}</span>
+
+                <div class="flex-grow-1" style="min-width:0">
+                  <div class="c-bubble">
+                    <b>{{ comment.user.username }}</b>
+                    {% if comment.user.verified %}<i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}
+                    <div>{{ comment.body|linebreaksbr }}</div>
+                  </div>
+
+                  <div class="c-actions muted">
+                    <span>{{ comment.created_at|timesince }}</span>
+                    <button type="button"
+                            class="c-btn c-like js-comment-like {% if comment.is_liked %}active{% endif %}"
+                            data-url="{% url 'toggle-like' 'comment' comment.id %}"
+                            aria-pressed="{% if comment.is_liked %}true{% else %}false{% endif %}"
+                            aria-label="Love comment">
+                      <i class="bi {% if comment.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                      <span class="c-like-count">{{ comment.like_count }}</span>
+                    </button>
+                    <button type="button" class="c-btn js-reply" data-target="reply-box-{{ comment.pk }}">{% if comment.replies_count > 1 %} Replies {% else %} Reply {% endif %} 
+                      <span class="c-like-count">{{ comment.replies_count }}</span>
+                    </button>
+                  </div>
+
+                  <div class="c-reply-box d-none mt-1" id="reply-box-{{ comment.pk }}">
+                    <form method="POST" action="{% url 'add_comment' post.id  %}" class="d-flex gap-2">
+                      {% csrf_token %}
+                      <input type="hidden" name="parent" value="{{ comment.id }}">
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                      
+                      <input class="form-control form-control-sm" name="body"
+                            placeholder="Reply to {{ comment.user.username }}…" aria-label="Reply" required >
+                      <button class="btn btn-brand btn-sm" type='submit'>Reply</button>
+                    </form>
+                  </div>
+                  
+                  {% if replies %}
+                    <button type="button" class="c-btn c-toggle js-toggle-replies" aria-expanded="false"
+                            data-target="replies-{{ comment.pk }}" data-count="{{ replies|length }}">
+                      <i class="bi bi-chevron-down"></i>
+                      <span class="c-toggle-text">View {{ replies|length }} {% if replies|length == 1 %}reply{% else %}replies{% endif %}</span>
+                    </button>
+
+                    <div class="c-replies mt-2 d-none" id="replies-{{ comment.pk }}">
+                      {% for reply in replies %}
+                        <div class="c-reply d-flex gap-2 mb-3" id="comment-{{ reply.pk }}">
+                          <span class="av av-sm flex-shrink-0" style="--h:260;{% if reply.user.img %}background-image:url('{{ reply.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not reply.user.img %}{{ reply.user.username|first|upper }}{% endif %}</span>
+
+                          <div class="flex-grow-1" style="min-width:0">
+                            <div class="c-bubble">
+                              <b>{{ reply.user.username }}</b>
+                              {% if reply.user.verified %}<i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}
+                              <div>{{ reply.body|linebreaksbr }}</div>
+                            </div>
+
+                            <div class="c-actions muted">
+                              <span>{{ reply.created_at|timesince }}</span>
+                              <button type="button" class="c-btn js-reply" data-target="reply-box-{{ reply.pk }}">Reply</button>
+                              <span class="c-like-count">{{ reply.replies_count }}</span>
+                            </div>
+
+                            <div class="c-reply-box d-none mt-1" id="reply-box-{{ reply.pk }}">
+                              <form method="POST" action="{% url 'add_comment' post.id %}" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="parent" value="{{ reply.id }}">
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <input class="form-control form-control-sm" name="body"
+                                      placeholder="Reply to {{ reply.user.username }}…"
+                                      aria-label="Reply" required maxlength="1000">
+                                <button class="btn btn-brand btn-sm" type="submit">Reply</button>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              {% endwith %}
+            {% endfor %}
+
+            <form method="POST" action="{% url 'add_comment' post.id  %}" class="d-flex gap-2 mt-2">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <input class="form-control" name="body" placeholder="Write a comment" aria-label="Comment" required maxlength="1000">
+              <button class="btn btn-brand">Send</button>
+            </form>
+          </div>
+        </div>
+      </article>
+    {% endfor %}
   </section>
 
   <aside class="col-lg-3 d-none d-lg-block"><div class="card side"><div class="card-body">

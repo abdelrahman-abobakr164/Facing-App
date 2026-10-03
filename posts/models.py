@@ -59,10 +59,10 @@ class Comment(TimeStamped):
             models.Index(fields=["parent", "created_at"]),
         ]
 
-    def save(self, *args, **kwargs):
-        if self.parent_id and self.parent.parent_id:
-            self.parent = self.parent.parent
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if self.parent_id and self.parent.parent_id:
+    #         self.parent = self.parent.parent
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.id}"

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Search{% endblock title %}
+{% block body %}
+<main class="container py-4 mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <a class="small muted" onclick="history.back()"><i class="bi bi-arrow-left"></i> Go Back </a>
+      <h3 class="my-3 mb-5 mt-4 text-center">{{u}} </h3>
+      <div class="tab-content"><div class="tab-pane fade show active" id="followers">
+        <div class="card">
+          <div class="card-body">
+                {% if get_users %}
+                {% for i in get_users %}
+                  <div class="person removable">
+                    <span class="av av-sm" id="avatarPrev"
+                      style="--h:260;{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                      {% if not i.img %}{{ i.username|first|upper }}{% endif %}
+                    </span> 
+                      <div class="flex-grow-1">
+                        <a class="name" href="{% url 'profile' i.id %}">{{i.username}}</a>
+                        {% if i.bio %}<small class="muted d-block">{{i.bio}}</small>{% endif %}
+                      </div>
+                  </div>
+                {% endfor %}
+                {% else %}
+                <h5 class=' mt-2'>Nothing Found.</h5>
+              {% endif %}
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</main>
+{% endblock body %}

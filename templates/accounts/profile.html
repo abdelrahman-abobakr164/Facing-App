@@ -7,12 +7,11 @@ Profile
 {% block body %}
 
 <style>
-  .c-bubble{background:var(--bs-tertiary-bg,#f1f2f6);border-radius:1rem;padding:.5rem .85rem;display:inline-block;max-width:100%;word-break:break-word}
-  .c-actions{display:flex;align-items:center;gap:.9rem;font-size:.8rem;padding:.2rem .5rem}
-  .c-btn{background:none;border:0;padding:0;font-weight:600;color:inherit;opacity:.7;cursor:pointer}
-  .c-btn:hover{opacity:1}
-  .c-like.active{color:#e0245e;opacity:1}
-  .c-like:disabled{cursor:wait}
+  .c-like .bi{display:inline-block;transition:transform .15s}
+  .c-like:hover .bi{transform:scale(1.15)}
+  .c-like.pop .bi{animation:c-pop .35s ease}
+  .c-like-count:empty{display:none}
+  @keyframes c-pop{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
   .c-replies{margin-left:.5rem;border-left:2px solid var(--bs-border-color,#e5e7eb);padding-left:.75rem}
   .c-toggle{font-size:.8rem;margin:.15rem .5rem}
   .c-toggle .bi{display:inline-block;transition:transform .2s}
@@ -29,7 +28,16 @@ Profile
         {% if not profile_user.img %}{{ profile_user.username|first|upper }}{% endif %}
       </span>
       <div class="flex-grow-1 pb-2"><h4 class="mb-2">{{ profile_user.username }} {% if profile_user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</h4></div>
-      <div class="pb-2 d-flex gap-2"><a class="btn btn-soft" href="settings.html"><i class="bi bi-person-plus-fill"></i> Follow</a></div></div>
+      
+      {% if profile_user.username == request.user.username %}
+
+        {% comment %} {% if  %}
+          
+        {% endif %} {% endcomment %}
+            
+        <div class="pb-2 d-flex gap-2"><a class="btn btn-soft" href=""><i class="bi bi-person-plus-fill"></i> Follow</a></div>
+      {% endif %}
+    </div>
       <p class="mt-3 mb-2">{{ profile_user.bio|default:" " }}</p>
       <div class="d-flex flex-wrap gap-4 small"><span><b>12</b> posts</span><a class="text-reset" href="followers.html"><b>248</b> followers</a><a class="text-reset" href="followers.html#following"><b>191</b> following</a></div>
       <hr>
@@ -71,10 +79,11 @@ Profile
         {% endif %}
 
         <div class="d-flex gap-1 border-top pt-2">
-          <form method="post" action="" class="js-like-form">
+          <form method="POST" action="{% url 'toggle-like' 'post' post.id %}" class="js-like-form">
             {% csrf_token %}
-            <button class="action like {% if post.pk in liked_posts %}active{% endif %}">
-              <i class="bi {% if post.pk in liked_posts %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="action like {% if post.is_liked %}active{% endif %}">
+              <i class="bi {% if post.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
               <span>{{ post.like_count }}</span>
             </button>
           </form>
@@ -99,12 +108,16 @@ Profile
                 <div class="c-actions muted">
                   <span>{{ comment.created_at|timesince }}</span>
                   <button type="button"
-                          class="c-btn c-like js-comment-like {% if comment.pk in liked_comments %}active{% endif %}"
-                          data-url="" aria-label="Like comment">
-                    <i class="bi {% if comment.pk in liked_comments %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                    <span>{{ comment.like_count }}</span>
+                          class="c-btn c-like js-comment-like {% if comment.is_liked %}active{% endif %}"
+                          data-url="{% url 'toggle-like' 'comment' comment.id %}"
+                          aria-pressed="{% if comment.is_liked %}true{% else %}false{% endif %}"
+                          aria-label="Love comment">
+                    <i class="bi {% if comment.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                    <span class="c-like-count">{{ comment.like_count }}</span>
                   </button>
-                  <button type="button" class="c-btn js-reply" data-target="reply-box-{{ comment.pk }}">Reply</button>
+                  <button type="button" class="c-btn js-reply" data-target="reply-box-{{ comment.pk }}">{% if comment.replies_count > 1 %} Replies {% else %} Reply {% endif %} 
+                    <span class="c-like-count">{{ comment.replies_count }}</span>
+                  </button>
                 </div>
 
                 <div class="c-reply-box d-none mt-1" id="reply-box-{{ comment.pk }}">
@@ -114,18 +127,19 @@ Profile
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                     
                     <input class="form-control form-control-sm" name="body"
-                           placeholder="Reply to {{ comment.user.username }}…" aria-label="Reply" required maxlength="1000">
+                           placeholder="Reply to {{ comment.user.username }}…" aria-label="Reply" required >
                     <button class="btn btn-brand btn-sm" type='submit'>Reply</button>
                   </form>
                 </div>
-
+                
                 {% if replies %}
-                  <button type="button" class="c-btn c-toggle js-toggle-replies" aria-expanded="true"
+                  <button type="button" class="c-btn c-toggle js-toggle-replies" aria-expanded="false"
                           data-target="replies-{{ comment.pk }}" data-count="{{ replies|length }}">
-                    <i class="bi bi-chevron-down"></i> <span class="c-toggle-text">Hide replies</span>
+                    <i class="bi bi-chevron-down"></i>
+                    <span class="c-toggle-text">View {{ replies|length }} {% if replies|length == 1 %}reply{% else %}replies{% endif %}</span>
                   </button>
 
-                  <div class="c-replies mt-2" id="replies-{{ comment.pk }}">
+                  <div class="c-replies mt-2 d-none" id="replies-{{ comment.pk }}">
                     {% for reply in replies %}
                       <div class="c-reply d-flex gap-2 mb-3" id="comment-{{ reply.pk }}">
                         <span class="av av-sm flex-shrink-0" style="--h:260;{% if reply.user.img %}background-image:url('{{ reply.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not reply.user.img %}{{ reply.user.username|first|upper }}{% endif %}</span>
@@ -139,12 +153,20 @@ Profile
 
                           <div class="c-actions muted">
                             <span>{{ reply.created_at|timesince }}</span>
-                            <button type="button"
-                                    class="c-btn c-like js-comment-like {% if reply.pk in liked_comments %}active{% endif %}"
-                                    data-url="" aria-label="Like reply">
-                              <i class="bi {% if reply.pk in liked_comments %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                              <span>{{ reply.like_count }}</span>
-                            </button>
+                            <button type="button" class="c-btn js-reply" data-target="reply-box-{{ reply.pk }}">Reply</button>
+                            <span class="c-like-count">{{ reply.replies_count }}</span>
+                          </div>
+
+                          <div class="c-reply-box d-none mt-1" id="reply-box-{{ reply.pk }}">
+                            <form method="POST" action="{% url 'add_comment' post.id %}" class="d-flex gap-2">
+                              {% csrf_token %}
+                              <input type="hidden" name="parent" value="{{ reply.id }}">
+                              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                              <input class="form-control form-control-sm" name="body"
+                                    placeholder="Reply to {{ reply.user.username }}…"
+                                    aria-label="Reply" required maxlength="1000">
+                              <button class="btn btn-brand btn-sm" type="submit">Reply</button>
+                            </form>
                           </div>
                         </div>
                       </div>
@@ -170,67 +192,82 @@ Profile
 </main>
 
 <script>
-(function () {
-  const csrf = () => document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+  (function () {
+    const csrf = () => document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
-  document.addEventListener('click', async (e) => {
+    document.addEventListener('click', async (e) => {
 
-    // 1) Reply button -> show / hide the reply input
-    const replyBtn = e.target.closest('.js-reply');
-    if (replyBtn) {
-      const box = document.getElementById(replyBtn.dataset.target);
-      const opened = box.classList.toggle('d-none') === false;
-      if (opened) {
-        const input = box.querySelector('input[name=body]');
-        input.focus();
-        input.setSelectionRange(input.value.length, input.value.length);
+      // 1) Reply button -> show / hide the reply input
+      const replyBtn = e.target.closest('.js-reply');
+      if (replyBtn) {
+        const box = document.getElementById(replyBtn.dataset.target);
+        const opened = box.classList.toggle('d-none') === false;
+        if (opened) {
+          const input = box.querySelector('input[name=body]');
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+        return;
       }
-      return;
-    }
 
-    // 2) Toggle button -> collapse / expand all replies of the comment
-    const toggle = e.target.closest('.js-toggle-replies');
-    if (toggle) {
-      const list = document.getElementById(toggle.dataset.target);
-      const expanded = list.classList.toggle('d-none') === false;
-      const n = toggle.dataset.count;
-      toggle.setAttribute('aria-expanded', expanded);
-      toggle.querySelector('.c-toggle-text').textContent =
-        expanded ? 'Hide replies' : `View ${n} ${n === '1' ? 'reply' : 'replies'}`;
-      return;
-    }
+      // 2) Toggle button -> collapse / expand all replies of the comment
+      const toggle = e.target.closest('.js-toggle-replies');
+      if (toggle) {
+        const list = document.getElementById(toggle.dataset.target);
+        const expanded = list.classList.toggle('d-none') === false;
+        const n = toggle.dataset.count;
+        toggle.setAttribute('aria-expanded', expanded);
+        toggle.querySelector('.c-toggle-text').textContent =
+          expanded ? 'Hide replies' : `View ${n} ${n === '1' ? 'reply' : 'replies'}`;
+        return;
+      }
 
-    // 3) Like a comment or a reply
-    const likeBtn = e.target.closest('.js-comment-like');
-    if (likeBtn) {
-      likeBtn.disabled = true;
-      try {
-        const res = await fetch(likeBtn.dataset.url, {
-          method: 'POST',
-          headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' },
-        });
-        if (!res.ok) throw new Error(res.status);
-        const data = await res.json();
-        likeBtn.classList.toggle('active', data.liked);
-        likeBtn.querySelector('i').className = 'bi ' + (data.liked ? 'bi-heart-fill' : 'bi-heart');
-        likeBtn.querySelector('span').textContent = data.count;
-      } catch (err) {
-        console.error('Like failed:', err);
-      } finally {
-        likeBtn.disabled = false;
+      // 3) Like a comment or a reply
+      const likeBtn = e.target.closest('.js-comment-like');
+      if (likeBtn) {
+        likeBtn.disabled = true;
+        try {
+          const res = await fetch(likeBtn.dataset.url, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' },
+          });
+          if (!res.ok) throw new Error(res.status);
+          const data = await res.json();
+          likeBtn.classList.toggle('active', data.liked);
+          likeBtn.setAttribute('aria-pressed', data.liked);
+          likeBtn.querySelector('i').className = 'bi ' + (data.liked ? 'bi-heart-fill' : 'bi-heart');
+          likeBtn.querySelector('.c-like-count').textContent = data.count || '';
+          if (data.liked) {
+            likeBtn.classList.remove('pop');
+            void likeBtn.offsetWidth; // restart the animation
+            likeBtn.classList.add('pop');
+          }
+        } catch (err) {
+          console.error('Like failed:', err);
+        } finally {
+          likeBtn.disabled = false;
+        }
+      }
+    });
+
+    // After posting a comment/reply the page reloads with #comment-<id>: open the panel and scroll to it
+    if (location.hash.startsWith('#comment-')) {
+      const target = document.querySelector(location.hash);
+      if (target) {
+        target.closest('.comments')?.classList.remove('d-none');
+        const list = target.closest('.c-replies');
+        if (list && list.classList.contains('d-none')) {
+          list.classList.remove('d-none');
+          const t = document.querySelector(`[data-target="${list.id}"]`);
+          if (t) {
+            t.setAttribute('aria-expanded', 'true');
+            t.querySelector('.c-toggle-text').textContent = 'Hide replies';
+          }
+        }
+        target.scrollIntoView({ block: 'center' });
       }
     }
-  });
-
-  // After posting a comment/reply the page reloads with #comment-<id>: open the panel and scroll to it
-  if (location.hash.startsWith('#comment-')) {
-    const target = document.querySelector(location.hash);
-    if (target) {
-      target.closest('.comments')?.classList.remove('d-none');
-      target.scrollIntoView({ block: 'center' });
-    }
-  }
-})();
+  })();
 </script>
 
 {% endblock body %}
