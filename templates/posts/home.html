@@ -35,9 +35,9 @@
       <article class="card mb-3" id="post-{{ post.pk }}">
         <div class="card-body">
           <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="av av-sm" style="--h:260;{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span>
+            <a href="{% url 'profile' post.user.id %}"><span class="av av-sm" style="--h:260;{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span></a>
             <div>
-              <b>{{ post.user.username }} {% if post.user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</b>
+              <a class='text-dark' href="{% url 'profile' post.user.id %}"><b>{{ post.user.username }} {% if post.user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</b></a>
               <div class="small muted">{{ post.created_at|timesince }} ago</div>
             </div>
           </div>

@@ -4,4 +4,5 @@ from .models import *
 
 
 admin.site.register(User)
+admin.site.register(Follow)
 admin.site.register(Contact)

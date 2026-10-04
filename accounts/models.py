@@ -8,7 +8,7 @@ from django.contrib.auth.models import (
 from django.conf import settings
 from django.utils.text import slugify
 
-# Create your models here.
+from django.db.models import F, Q
 
 
 class UserManager(BaseUserManager):
@@ -119,9 +119,7 @@ class Follow(models.Model):
     following = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name="followers", on_delete=models.CASCADE
     )
-    status = models.CharField(
-        max_length=8, choices=Status.choices, default=Status.PENDING
-    )
+    status = models.CharField(max_length=8, choices=Status)
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -129,8 +127,13 @@ class Follow(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["follower", "following"], name="unique_follow"
-            )
+            ),
+            models.CheckConstraint(
+                condition=~Q(follower=F("following")), name="no_self_follow"
+            ),
         ]
+        indexes = [models.Index(fields=["following", "-created_at"])]
+
         ordering = ["-created_at"]
 
     def __str__(self):

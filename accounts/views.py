@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from accounts.forms import SettingsForm
 from posts.services import *
 from posts.models import *
+from .models import *
 
 User = get_user_model()
 
@@ -27,7 +28,7 @@ def settings(request):
 
 @login_required
 def profile(request, id):
-    profile_user = get_object_or_404(User, id=id)
+    profile_user = get_object_or_404(User.objects.prefetch_related("followers"), id=id)
     posts = (
         Post.objects.filter(user=profile_user)
         .select_related("user")
@@ -62,3 +63,46 @@ def profile(request, id):
         "profile_user": profile_user,
     }
     return render(request, "accounts/profile.html", context)
+
+
+def connection(request, target):
+    if request.method == "POST":
+        next_url = request.POST.get("next", "/")
+        target_user = User.objects.get(id=target)
+        follow_status = Follow.objects.filter(
+            follower=request.user, following=target_user
+        ).select_related("follower", "following")
+
+        if follow_status.exists():
+            for i in follow_status:
+                if i.status == "Pending":
+                    return redirect(next_url)
+                elif i.status == "Accepted":
+                    return redirect(next_url)
+
+        elif target_user.check_follower == True:
+            status = "pending"
+        else:
+            status = "accepted"
+        with transaction.atomic():
+            if not follow_status.exists():
+                Follow.objects.create(
+                    follower=request.user, following=target_user, status=status
+                )
+            else:
+                follow_status.delete()
+
+        return redirect(next_url)
+    else:
+        return redirect(request.META.get("HTTP_REFERER"))
+
+
+def connections(request, id):
+    user = get_object_or_404(
+        User.objects.prefetch_related("followers", "following"), id=id
+    )
+    followers = set(Follow.objects.filter(following=user).select_related('follower'))
+    following = set(Follow.objects.filter(follower=user).select_related('following'))
+
+    context = {"followers": followers, "following": following, "user": user}
+    return render(request, "accounts/connections.html", context)
