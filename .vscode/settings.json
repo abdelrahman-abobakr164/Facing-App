@@ -3,5 +3,6 @@
     "notebook.defaultFormatter": "ms-python.black-formatter",
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "notebook.formatOnSave.enabled": true,
-    "editor.formatOnPaste": true
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true
 }

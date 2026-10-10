@@ -2,48 +2,117 @@
 {% block title %}Connections{% endblock title %}
 
 {% block body %}
-<main class="container py-4"><div class="row justify-content-center"><div class="col-lg-6">
-  <a class="small muted" href="profile.html"><i class="bi bi-arrow-left"></i> Back to profile</a>
-  <h4 class="my-3">{{user.username|capfirst}} {% if user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</h4>
-  <ul class="nav nav-pills gap-2 mb-3" role="tablist">
-    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#followers" type="button">Followers <span class="opacity-75">248</span></button></li>
-    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#following" type="button">Following <span class="opacity-75">191</span></button></li>
-  </ul>
-  <div class="tab-content"><div class="tab-pane fade show active" id="followers"><div class="card"><div class="card-body">
-    <form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search followers" name='u' aria-label="Search followers"></form>
-    
-    {% for i in followers %}
-      <div class="person removable">
-        <span class="av" style="--h:330">L</span>
-        <div class="flex-grow-1">
-          <a class="name" href="{% url 'profile' i.follower.id %}">{{i.follower.username}} {% if i.follower.verified %}<i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</a>
-          {% if i.follower.bio %}<small class="muted d-block">{{i.follower.bio}}</small>{% endif %}
+<main class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <a class="small muted" href="{% url 'profile' user.id %}"><i class="bi bi-arrow-left"></i> Back to profile</a>
+      <h4 class="my-3">{{user.username}} {% if user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</h4>
+      <ul class="nav nav-pills gap-2 mb-3" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#followers" type="button">Followers <span class="opacity-75">{{followers.count}}</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#following" type="button">Following <span class="opacity-75">{{following.count}}</span></button></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="followers">
+          <div class="card">
+            <div class="card-body">
+              <form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search followers" name='u' aria-label="Search followers"></form>
+              {% for i in followers %}
+                <div class="person removable">
+                <span class="av" id="avatarPrev"
+                  style="--h:200;{% if i.follower.img %}background-image:url('{{ i.follower.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                  {% if not i.follower.img %}{{ i.follower.username|first|upper }}{% endif %}
+                </span> 
+                  <div class="flex-grow-1">
+                    <a class="name" href="{% url 'profile' i.follower.id %}">{{i.follower.username}} {% if i.follower.verified %}<i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</a>
+                    <div class="d-flex">
+                      <small class="muted d-block">{{i.follower_followers}} Followers</small>
+                      <small class="muted d-block ms-3">{{i.follower_following}} Following</small>
+                    </div>
+                  </div>
+                  {% if request.user != i.follower %}
+                    <div class="d-flex gap-2">
+                      <form action="{% url 'connection' i.follower.id %}" method='POST'>
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value='{{request.get_full_path}}'>
+                          
+                        {% if i.follower.id in user_accepted_ids %}
+                          <button class="btn btn-brand btn-sm" data-toggle="UnFollow|Follow" type='submit'>UnFollow</button>
+                        {% elif i.follower.id in user_pending_ids %}
+                          <button class="btn btn-soft btn-sm" data-toggle="Pending|Follow" type='submit'>Cancel Pending</button>
+                        {% else %} 
+                          <button class="btn btn-brand" data-toggle="Follow|Following" type='submit'>
+                          <i class="bi bi-person-plus-fill"></i> Follow</button>
+                        {% endif %}
+                      </form>
+                      {% for f in request.user.followers.all %}
+                        {% if i.follower == f.follower %}
+                          <form action="{% url 'connection' i.follower.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value='{{request.get_full_path}}'>
+                            <button class="btn btn-soft btn-sm" type='submit' name='action' value='remove' data-dismiss>Remove</button>
+                          </form>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                {% empty %}
+                  <h5 class='ms-2 mt-3'>Nothing Found.</h5>
+              {% endfor %}
+            </div>
+          </div>
         </div>
-        
-        <div class="d-flex gap-2">
-          <form action="{% url 'connection' i.follower.id %}" method='POST'>
-            {% csrf_token %}
-            <input type="hidden" name="next">
-
-            {% if request.user == i.follower or request.user == i.following and i.status == 'accepted' %}
-              <button class="btn btn-brand btn-sm" data-toggle="UnFollow|Follow">UnFollow</button>
-            {% elif request.user == i.follower or request.user == i.following and i.status == 'pending' %}
-              <button class="btn btn-brand btn-sm" data-toggle="Follow|UnFollow">Follow</button>
-            {% else %} 
-              <button class="btn btn-brand" data-toggle="Follow|Following" type='submit'>
-              <i class="bi bi-person-plus-fill"></i> Follow</button>
-              <button class="btn btn-soft btn-sm" data-dismiss>Remove</button>
-            {% endif %}
-          </form>
-
+        <div class="tab-pane fade" id="following">
+          <div class="card">
+            <div class="card-body">
+              <form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search following" name='u' aria-label="Search following"></form>
+              {% for i in following %}
+                <div class="person removable">
+                <span class="av" id="avatarPrev"
+                  style="--h:200;{% if i.following.img %}background-image:url('{{ i.following.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                  {% if not i.following.img %}{{ i.following.username|first|upper }}{% endif %}
+                </span> 
+                  <div class="flex-grow-1">
+                    <a class="name" href="{% url 'profile' i.following.id %}">{{i.following.username}} {% if i.following.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</a>
+                    <div class="d-flex">
+                      <small class="muted d-block">{{i.following_following}} Followers</small>
+                      <small class="muted d-block ms-3">{{i.following_followers}} Following</small>
+                    </div>
+                  </div>
+                  
+                  {% if i.following != request.user %}
+                    <form action="{% url 'connection' i.following.id %}" method='POST'>
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value='{{request.get_full_path}}'>
+                        
+                      {% if i.following.id in user_accepted_ids %}
+                        <button class="btn btn-brand btn-sm" data-toggle="UnFollow|Follow">UnFollow</button>
+                      {% elif i.following.id in user_pending_ids %}
+                        <button class="btn btn-soft  btn-sm" data-toggle="Pending|Follow">Cancel Pending</button>
+                      {% else %} 
+                        <button class="btn btn-brand" data-toggle="Follow|Following" type='submit'>
+                        <i class="bi bi-person-plus-fill"></i> Follow</button>
+                      {% endif %}
+                    </form>
+                    {% for f in request.user.following.all %}
+                      {% if i.following == f.following %}
+                        <form action="{% url 'connections' i.following.id %}" method="post">
+                          {% csrf_token %}
+                          <input type="hidden" name="next" value='{{request.get_full_path}}'>
+                          <button class="btn btn-soft btn-sm" data-dismiss>Remove</button>
+                        </form>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                </div>
+                {% empty %}
+                <h5 class='ms-2 mt-3'>Nothing Found.</h5>
+              {% endfor %}
+            </div>
+          </div>
         </div>
       </div>
-    {% endfor %}
-
-  </div></div></div>
-  <div class="tab-pane fade" id="following"><div class="card"><div class="card-body">
-    <form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search following" name='u' aria-label="Search following"></form>
-    {% comment %} <div class="person removable"><span class="av" style="--h:20">K</span><div class="flex-grow-1"><a class="name" href="{% url 'profile' i.follower.id %}">Karim Adel <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><small class="muted d-block">@karim</small></div><div class="d-flex gap-2"><button class="btn btn-soft btn-sm" data-toggle="Follow|Following">Following</button></div></div> {% endcomment %}
-  </div></div></div></div>
-</div></div></main>
+    </div>
+  </div>
+</main>
 {% endblock body %}

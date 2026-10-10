@@ -27,7 +27,7 @@ class BaseLike(models.Model):
 
 class Post(TimeStamped):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     caption = models.CharField(null=True, blank=True, max_length=2000)
     body = models.TextField(null=True, blank=True)
     like_count = models.PositiveIntegerField(default=0)
@@ -59,11 +59,6 @@ class Comment(TimeStamped):
             models.Index(fields=["parent", "created_at"]),
         ]
 
-    # def save(self, *args, **kwargs):
-    #     if self.parent_id and self.parent.parent_id:
-    #         self.parent = self.parent.parent
-    #     super().save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.id}"
 
@@ -92,7 +87,7 @@ class CommentLike(BaseLike):
 
 class PostMedia(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="media")
-    file = models.ImageField(upload_to="posts/%Y/%m/")
+    file = models.FileField(upload_to="posts/%Y/%m/")
 
     def media_type(self):
         if not self.file:

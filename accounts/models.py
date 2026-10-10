@@ -46,11 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=300, unique=True)
-
-    img = models.ImageField(
-        default="1.png", upload_to="ProfileImg", null=True, blank=True
-    )
-
+    img = models.ImageField(upload_to="ProfileImg", null=True, blank=True)
     bio = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     place = models.CharField(max_length=100, null=True, blank=True)

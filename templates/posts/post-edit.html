@@ -1,55 +1,49 @@
-<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<script>document.documentElement.dataset.bsTheme=localStorage.theme||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")</script>
-<link href="assets/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
-<link href="assets/vendor/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="assets/css/style.css" rel="stylesheet">
-<title>Edit post | Facing</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}edit{% endblock title %}
+
+{% block body %}
 <main class="container py-4"><div class="row justify-content-center"><div class="col-lg-6">
   <form class="card" method="post" enctype="multipart/form-data"><div class="card-body p-4">
+    {% csrf_token %}
+    <input type="hidden" name="next" value='{{request.get_full_path}}'>
     <h5 class="mb-4">Edit post</h5>
-    <label class="form-label" for="content">Caption</label>
-    <textarea id="content" name="content" class="form-control mb-3" rows="4">Behind the scenes of our new onboarding flow. Feedback is welcome!</textarea>
-    <label class="form-label">Current media</label>
-    <div class="media mb-2" id="currentMedia" style="height:200px;background-image:linear-gradient(135deg,#9fb4f5,#6b6fd6)"><span class="play"><i class="bi bi-play-circle-fill"></i></span></div>
-    <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="remove" name="remove_media" data-remove-media="#currentMedia"><label class="form-check-label" for="remove">Remove current media</label></div>
-    <div class="preview d-none"><button type="button" class="preview-x" data-clear aria-label="Remove">&times;</button><img alt="Preview"><video controls></video></div>
-    <div class="d-flex gap-2 mt-3">
-      <label class="chip"><i class="bi bi-image"></i> Replace photo<input type="file" name="image" accept="image/*" hidden></label>
-      <label class="chip"><i class="bi bi-camera-video"></i> Replace video<input type="file" name="video" accept="video/*" hidden></label></div>
-    <div class="d-flex gap-2 mt-4"><button class="btn btn-brand px-4">Save changes</button><a class="btn btn-soft" href="profile.html">Cancel</a></div>
-  </div></form>
-</div></div></main>
-<!-- Messages panel: opens from the navbar chat icon. Esc = back to the list, Esc again = close. -->
-<aside id="msgPanel" class="msg-panel card d-none" aria-label="Messages">
-    <div class="msg-lobby">
-      <div class="msg-head"><h6 class="mb-0">Messages</h6><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
-      <div class="px-3 pb-2"><input class="form-control rounded-pill" placeholder="Search people" aria-label="Search people"></div>
-      <div class="msg-users">
-        <button class="msg-item unread" type="button" data-chat="#c-lina"><span class="av" style="--h:330">L</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></b><small class="muted">Thank you, Lina! Your photos are inspiring.</small></span><small class="muted">2m</small></button>
-        <button class="msg-item" type="button" data-chat="#c-omar"><span class="av" style="--h:200">O</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Omar Khaled</b><small class="muted">Can you review my pull request today?</small></span><small class="muted">1h</small></button>
-        <button class="msg-item" type="button" data-chat="#c-sara"><span class="av" style="--h:150">S</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Sara Nabil</b><small class="muted">No messages yet</small></span><small class="muted"></small></button>
+    
+    {% if media %}
+      {% if post.caption %}
+        <label class="form-label" for="content">Caption</label>
+        <textarea id="content" name="caption" class="form-control mb-3" rows="4">{{post.caption}}</textarea>
+      {% endif %}
+      <label class="form-label">Current media</label>
+      {% for i in media %}
+        <div class="media mb-2" id="currentMedia">
+          {% if i.media_type == 'image' %}
+            <img src="{{i.file.url}}" style="max-height:300px" alt="Media">
+          {% elif i.media_type == 'video' %}
+            <video class="mb-2 w-100" controls preload="metadata" style="height:300px">
+              <source src="{{ i.file.url }}">
+            </video>
+          {% endif %}
+        </div>
+      {% endfor %}
+      
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="remove" name="remove_media" data-remove-media="#currentMedia">
+        <label class="form-check-label" for="remove">Remove current media</label>
       </div>
+      <div class="preview d-none"><button type="button" class="preview-x" data-clear aria-label="Remove">&times;</button><img alt="Preview"><video controls></video></div>
+      <div class="d-flex gap-2 mt-3">
+        <label class="chip"><i class="bi bi-image"></i> Add photo/s<input type="file" multiple='true' name="add_image" accept="image/*" hidden></label>
+        <label class="chip"><i class="bi bi-camera-video"></i> Add video/s<input type="file" multiple='true' name="add_video" accept="video/*" hidden></label>
+      </div>
+    {% else %}
+        <label class="form-label" for="content">Content</label>
+        <textarea id="content" name="content" class="form-control mb-3" rows="4">{{post.body}}</textarea>
+    {% endif %}
+
+    <div class="d-flex gap-2 mt-4"><button class="btn btn-brand px-4">Save changes</button>
+      <a class="btn btn-soft" onclick="history.back()">Cancel</a>
     </div>
-    <section class="msg-conv d-none" id="c-lina">
-      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:330">L</span><a class="name flex-grow-1" href="profile.html">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
-      <div class="chat-box"><div class="d-flex"><div class="bubble">Hey! Loved your latest post.</div></div><div class="d-flex"><div class="bubble me">Thank you, Lina! Your photos are inspiring.</div></div></div>
-      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
-    </section>
-    <section class="msg-conv d-none" id="c-omar">
-      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:200">O</span><a class="name flex-grow-1" href="profile.html">Omar Khaled</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
-      <div class="chat-box"><div class="d-flex"><div class="bubble">Can you review my pull request today?</div></div></div>
-      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
-    </section>
-    <section class="msg-conv d-none" id="c-sara">
-      <div class="msg-head"><button class="msg-x" type="button" data-msg-back aria-label="Back"><i class="bi bi-arrow-left"></i></button><span class="av av-sm" style="--h:150">S</span><a class="name flex-grow-1" href="profile.html">Sara Nabil</a><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
-      <div class="chat-box"><p class="text-center muted mt-5">No messages yet. Say hello!</p></div>
-      <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
-    </section>
-  </aside>
-  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="assets/js/app.js"></script>
-</body></html>
+  </div>
+</form>
+</div></div></main>
+{% endblock body %}
