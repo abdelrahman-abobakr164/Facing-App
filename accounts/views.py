@@ -4,6 +4,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
+from django.contrib import messages
 from django.db.models import Q
 from django.urls import reverse
 
@@ -25,6 +26,9 @@ def settings(request):
             form.save()
             return redirect("settings")
         else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
             return redirect("settings")
     else:
         form = SettingsForm(instance=request.user)
@@ -115,7 +119,6 @@ def connection(request, target):
         if action:
             if action == "remove":
                 Follow.objects.filter(follower=target, following=request.user).delete()
-
         else:
             follow_status = Follow.objects.filter(
                 follower=request.user, following=target_user
@@ -130,8 +133,10 @@ def connection(request, target):
             if follow_status.exists():
                 for i in follow_status:
                     if i.status == "Pending":
+                        messages.warning(request, "the Connection is Pending")
                         return redirect(next_url)
                     elif i.status == "Accepted":
+                        messages.warning(request, "You are friends")
                         return redirect(next_url)
 
             elif target_user.check_follower == True:
@@ -144,15 +149,27 @@ def connection(request, target):
                     accept = pending_requests.first()
                     accept.status = "accepted"
                     accept.save()
+                    messages.success(
+                        request, "You are Friends Now, You Can Chatting Now"
+                    )
                 elif pending_sent.exists():
                     pending_sent.delete()
+                    messages.success(
+                        request, "Your Pending Connection has been Cancelled"
+                    )
                 elif not follow_status.exists():
-                    Follow.objects.create(
+                    follow_creation = Follow.objects.create(
                         follower=request.user, following=target_user, status=status
                     )
-
+                    messages.success(
+                        request, f"You are friend of {follow_creation.following}"
+                    )
                 else:
                     follow_status.delete()
+                    messages.success(
+                        request,
+                        f"Your Connection With {follow_status.following} has been gone",
+                    )
 
         return redirect(next_url)
     else:

@@ -1,89 +1,104 @@
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, get_object_or_404
-from .models import Post, PostMedia
+from django.views.decorators.http import require_POST
+from django.core.exceptions import ValidationError
+from django.contrib import messages
 from django.db import transaction
 from django.urls import reverse
 
-IMAGE_EXTENSIONS = ["JPG", "jpg", "jpeg", "png", "PNG"]
-VIDEO_EXTENSIONS = ["mp4", "mp3"]
-FILE_SIZE = 1024 * 1024 * 10
+from .models import Post, PostMedia
+from .validators import validation_image, validation_video
 
 
-def validate_file_size(file):
-    return file.size <= FILE_SIZE
+def get_safe_next_url(request, default="home"):
+    """Return the `next` URL only if it points to our own site."""
+    next_url = request.POST.get("next")
+    if url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return reverse(default)
 
 
-def image_validation(image):
-    image_extension = image.name.split(".")[-1] if "." in image.name else ""
-    return image_extension in IMAGE_EXTENSIONS
+def validate_uploads(images, videos):
+    errors = []
+    checks = [(f, validation_image) for f in images] + [
+        (f, validation_video) for f in videos
+    ]
+
+    for file, validator in checks:
+        try:
+            validator(file)
+        except ValidationError as error:
+            errors.extend(error.messages)
+
+    if errors:
+        raise ValidationError(errors)
 
 
-def video_validation(video):
-    video_extension = video.name.split(".")[-1] if "." in video.name else ""
-    return video_extension in VIDEO_EXTENSIONS
+def attach_media(post, images, videos):
+    for file in (*images, *videos):
+        PostMedia.objects.create(post=post, file=file)
 
 
-def video_adding(add_video, post):
-    print(f"before for {add_video}")
-    for video in add_video:
-        print(f"after for {video}")
-        if not video_validation(video):
-            return redirect(next)
-        add_post = PostMedia.objects.create(post=post, file=video)
-    return add_post
+def remove_media(post, media_id):
+    media = get_object_or_404(PostMedia, id=media_id, post=post)
+    media.delete()
 
 
-def image_adding(add_image, post):
-    print(f"before for {add_image}")
-    for image in add_image:
-        print(f"after for {image}")
-        print(image)
-        if not image_validation(image):
-            return redirect(next)
-        add_post = PostMedia.objects.create(post=post, file=image)
-    return add_post
+def create_post(request):
+    videos = request.FILES.getlist("video")
+    images = request.FILES.getlist("image")
+    content = request.POST.get("content", "").strip()
+
+    if not (content or images or videos):
+        raise ValidationError("Write something or add a photo or a video.")
+
+    validate_uploads(images, videos)
+
+    with transaction.atomic():
+        post = Post.objects.create(
+            user=request.user,
+            body=content if not images or videos else content,
+            caption=content,
+        )
+
+        attach_media(post, images, videos)
 
 
-def post_commit(request, id):
-    if request.method == "POST":
-        next_url = request.POST.get("next")
-        add_image = request.FILES.getlist("add_image")
-        add_video = request.FILES.getlist("add_video")
-        content = request.POST.get("content")
-        caption = request.POST.get("caption")
-        remove_media = request.POST.get("remove_media")
+def post_update(request, post):
+    images = request.FILES.getlist("add_image")
+    videos = request.FILES.getlist("add_video")
+    media_id = request.POST.get("remove_media")
 
-        if not url_has_allowed_host_and_scheme(
-            next_url, allowed_hosts={request.get_host()}
-        ):
-            if request.path == "profile":
-                next_url = reverse("profile", args=[id])
-            else:
-                next_url = reverse("home")
+    validate_uploads(images, videos)
 
-        post = get_object_or_404(Post, id=id)
-        with transaction.atomic():
-            if remove_media:
-                print("Yes remove media")
-                post.media.all().delete()
-                if add_video:
-                    video_adding(add_video, post)
-                if add_image:
-                    image_adding(add_image, post)
-                return redirect(next_url)
+    with transaction.atomic():
+        if "content" in request.POST:
+            post.body = request.POST["content"].strip()
+        if "caption" in request.POST:
+            post.caption = request.POST["caption"].strip()
+        post.save()
+        if media_id:
+            remove_media(post, media_id)
+        attach_media(post, images, videos)
 
-            elif add_video:
-                print("add_video")
-                video_adding(add_video, post)
 
-            elif add_image:
-                print("in if add_image")
-                image_adding(add_image, post)
+@require_POST
+@login_required
+def post_commit(request, id=None):
+    next_url = get_safe_next_url(request)
+    post = get_object_or_404(Post, id=id, user=request.user) if id else None
+    try:
+        if post:
+            post_update(request, post)
+        else:
+            create_post(request)
+    except ValidationError as error:
+        for message in error.messages:
+            messages.error(request, message)
 
-            post.caption = caption
-            post.save()
-
-            if content:
-                Post.objects.create(user=request.user, body=content)
-            return redirect(next_url)
-    return redirect("/")
+    return redirect(next_url)

@@ -9,6 +9,11 @@ from django.conf import settings
 from django.utils.text import slugify
 
 from django.db.models import F, Q
+import random
+
+
+def random_color():
+    return random.choice([1, 2, 3, 4, 5])
 
 
 class UserManager(BaseUserManager):
@@ -43,10 +48,21 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class Colors(models.IntegerChoices):
+        YELLOW = 20, "Yellow"
+        AQUA = 180, "Aqua"
+        GBLUE = 150, "Green Blue"
+        BLUE = 200, "Blue"
+        GREEN = 100, "Green"
+        PURPLE = 240, "Purple"
+        YGREEN = 60, "Yellow Green"
+        DPURPLE = 260, "Deep Purple"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=300, unique=True)
     img = models.ImageField(upload_to="ProfileImg", null=True, blank=True)
+    color = models.IntegerField(choices=Colors.choices)
     bio = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     place = models.CharField(max_length=100, null=True, blank=True)
@@ -100,6 +116,8 @@ class User(AbstractBaseUser, PermissionsMixin):
             return f""
 
     def save(self, *args, **kwargs):
+        if not self.pk:
+            self.color = random.choice(self.Colors.values)
         self.slug = slugify(self.username)
         return super(User, self).save(*args, **kwargs)
 

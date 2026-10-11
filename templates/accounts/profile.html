@@ -21,7 +21,7 @@ Profile
   <div class="card mb-4"><div class="cover" style="background-image:linear-gradient(135deg,#6c4cf1,#ff5fa2)"></div>
     <div class="card-body pt-0"><div class="profile-top d-flex flex-wrap align-items-end gap-3">
       <span class="av av-xl" id="avatarPrev"
-            style="--h:260;{% if profile_user.img %}background-image:url('{{ profile_user.img.url }}');background-size:cover;background-position:center;{% endif %}">
+            style="{% if profile_user.img %}background-image:url('{{ profile_user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{profile_user.color}}{% endif %}">
         {% if not profile_user.img %}{{ profile_user.username|first|upper }}{% endif %}
       </span>
       <div class="flex-grow-1 pb-2"><h4 class="mb-2">{{ profile_user.username }} {% if profile_user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</h4></div>
@@ -62,7 +62,7 @@ Profile
       <article class="card mb-3" id="post-{{ post.pk }}">
         <div class="card-body">
           <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="av av-sm" style="--h:260;{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span>
+            <span class="av av-sm" style="{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{post.user.color}}{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span>
             <div class="flex-grow-1">
               <b>{{ post.user.username }} {% if post.user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</b>
               <div class="small muted">{{ post.created_at|timesince }} ago</div>
@@ -84,22 +84,41 @@ Profile
             </div>
           </div>
 
-          {% if post.media.all %}
-            {% if post.caption %}<p>{{ post.caption|linebreaksbr }}</p>{% endif %}
-            {% for media in post.media.all %}
-              {% if media.media_type == "image" %}
-                <img class="media mb-2 " style='width:100%; height:100%' src="{{ media.file.url }}" alt="Post photo" loading="lazy"
-                    style="max-height:520px;object-fit:cover;">
-              {% elif media.media_type == "video" %}
-                <video class="media mb-2 w-100" controls preload="metadata" style="max-height:520px;">
-                  <source src="{{ media.file.url }}">
-                </video>
-              {% endif %}
-            {% endfor %}
+          {% with items=post.media.all %}
+            {% if items %}
+              {% if post.caption %}<p class="post-caption">{{ post.caption|linebreaksbr }}</p>{% endif %}
 
+              <div id="media-{{ post.pk }}" class="carousel slide post-carousel mb-2 {% if items|length == 1 %}is-single{% endif %}" data-bs-interval="false">
+                {% if items|length > 1 %}<span class="pc-count">1 / {{ items|length }}</span>{% endif %}
+
+                <div class="carousel-inner">
+                  {% for m in items %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                      {% if m.media_type == 'image' %}
+                        <img src="{{ m.file.url }}" alt="Post photo {{ forloop.counter }}" loading="lazy">
+                      {% elif m.media_type == 'video' %}
+                        <video controls preload="metadata" playsinline><source src="{{ m.file.url }}"></video>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+
+                {% if items|length > 1 %}
+                  {% if items|length <= 8 %}
+                    <div class="carousel-indicators">
+                      {% for m in items %}
+                        <button type="button" data-bs-target="#media-{{ post.pk }}" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Item {{ forloop.counter }}"></button>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <button class="carousel-control-prev" type="button" data-bs-target="#media-{{ post.pk }}" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#media-{{ post.pk }}" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
+                {% endif %}
+              </div>
             {% else %}
-            <p>{{ post.body|linebreaksbr }}</p>
-          {% endif %}
+              <p>{{ post.body|linebreaksbr }}</p>
+            {% endif %}
+          {%  endwith %}
 
           <div class="d-flex gap-1 border-top pt-2">
             <form method="POST" action="{% url 'toggle-like' 'post' post.id %}" class="js-like-form">
@@ -119,7 +138,7 @@ Profile
             {% for comment in post.none_parent_comment %}
               {% with replies=comment.replies.all %}
               <div class="c-item d-flex gap-2 mb-3" id="comment-{{ comment.pk }}">
-                <span class="av av-sm flex-shrink-0" style="--h:260;{% if comment.user.img %}background-image:url('{{ comment.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not comment.user.img %}{{ comment.user.username|first|upper }}{% endif %}</span>
+                <span class="av av-sm flex-shrink-0" style="{% if comment.user.img %}background-image:url('{{ comment.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{comment.user.color}}{% endif %}">{% if not comment.user.img %}{{ comment.user.username|first|upper }}{% endif %}</span>
 
                 <div class="flex-grow-1" style="min-width:0">
                   <div class="c-bubble">
@@ -165,7 +184,7 @@ Profile
                     <div class="c-replies mt-2 d-none" id="replies-{{ comment.pk }}">
                       {% for reply in replies %}
                         <div class="c-reply d-flex gap-2 mb-3" id="comment-{{ reply.pk }}">
-                          <span class="av av-sm flex-shrink-0" style="--h:260;{% if reply.user.img %}background-image:url('{{ reply.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not reply.user.img %}{{ reply.user.username|first|upper }}{% endif %}</span>
+                          <span class="av av-sm flex-shrink-0" style="{% if reply.user.img %}background-image:url('{{ reply.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{reply.user.color}}{% endif %}">{% if not reply.user.img %}{{ reply.user.username|first|upper }}{% endif %}</span>
 
                           <div class="flex-grow-1" style="min-width:0">
                             <div class="c-bubble">

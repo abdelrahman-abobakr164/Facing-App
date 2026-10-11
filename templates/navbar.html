@@ -14,7 +14,7 @@
       {% if request.user.is_authenticated %}
       <a href="#" data-bs-toggle="dropdown" aria-label="Account">      
           <span class="av " id="avatarPrev"
-              style="--h:260;{% if user.img %}background-image:url('{{ request.user.img.url }}');background-size:cover;background-position:center;{% endif %}">
+              style="{% if user.img %}background-image:url('{{ request.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{request.user.color}}{% endif %}">
               {% if not request.user.img %}{{ user.username|first|upper }}{% endif %}
           </span> 
       </a>

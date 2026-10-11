@@ -19,7 +19,7 @@
               {% for i in followers %}
                 <div class="person removable">
                 <span class="av" id="avatarPrev"
-                  style="--h:200;{% if i.follower.img %}background-image:url('{{ i.follower.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                  style="{% if i.follower.img %}background-image:url('{{ i.follower.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.follower.color}}{% endif %}">
                   {% if not i.follower.img %}{{ i.follower.username|first|upper }}{% endif %}
                 </span> 
                   <div class="flex-grow-1">
@@ -69,7 +69,7 @@
               {% for i in following %}
                 <div class="person removable">
                 <span class="av" id="avatarPrev"
-                  style="--h:200;{% if i.following.img %}background-image:url('{{ i.following.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                  style="{% if i.following.img %}background-image:url('{{ i.following.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.following.color}}{% endif %}">
                   {% if not i.following.img %}{{ i.following.username|first|upper }}{% endif %}
                 </span> 
                   <div class="flex-grow-1">

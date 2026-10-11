@@ -9,7 +9,17 @@
 <title>{% block title %}{% endblock title %} | Facing</title>
 </head>
 <body>
-
+<style>
+  .toast-stack{position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:1080;width:min(420px,calc(100vw - 24px));display:flex;flex-direction:column;gap:.6rem;pointer-events:none}
+  .toast-msg{--c:var(--brand);pointer-events:auto;display:flex;align-items:center;gap:.75rem;padding:.8rem 1rem;background:var(--card);color:var(--ink);
+    border:1px solid var(--line);border-left:4px solid var(--c);border-radius:14px;box-shadow:var(--shadow);animation:toast-in .25s ease-out;transition:opacity .3s,transform .3s}
+  .toast-msg.hide{opacity:0;transform:translateY(-8px)}
+  .toast-ico{color:var(--c);font-size:1.25rem}
+  .toast-text{flex:1;font-size:.92rem}
+  .toast-x{border:0;background:none;color:var(--muted);width:28px;height:28px;border-radius:50%}.toast-x:hover{background:var(--soft);color:var(--brand)}
+  .toast-success{--c:#20c997}.toast-error{--c:#ff4d6d}.toast-warning{--c:#f5a524}.toast-info,.toast-debug{--c:var(--brand)}
+  @keyframes toast-in{from{opacity:0;transform:translateY(-10px)}}
+</style>
 
 
 
@@ -17,6 +27,21 @@
 
 
 {% include 'navbar.html' %}
+{% if messages %}
+<div class="toast-stack" aria-live="polite">
+  {% for message in messages %}
+    <div class="toast-msg toast-{{ message.level_tag }}" role="alert">
+      <i class="bi {% if message.level_tag == 'success' %}bi-check-circle-fill{% elif message.level_tag == 'error' %}bi-x-circle-fill{% elif message.level_tag == 'warning' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %} toast-ico"></i>
+      <span class="toast-text">{{ message }}</span>
+      <button type="button" class="toast-x" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+    </div>
+  {% endfor %}
+</div>
+
+
+
+
+{% endif %}
 {% block body %}
 
 {% endblock body %}
@@ -50,6 +75,13 @@
     </section>
   </aside>
   <script src="{% static 'assets/vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'assets/js/app.js' %}"></script>
+  <script src="{% static 'assets/js/app.js' %}"></script>
+  <script>
+    document.querySelectorAll('.toast-msg').forEach(t => {
+      const close = () => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); };
+      t.querySelector('.toast-x').addEventListener('click', close);
+      setTimeout(close, t.classList.contains('toast-error') ? 8000 : 5000);
+    });
+  </script>
 </body>
 </html>

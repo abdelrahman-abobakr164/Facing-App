@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from .decorator import owner_ship_required
+from django.contrib import messages
 from django.db import transaction
 from django.urls import reverse
 
@@ -61,6 +62,9 @@ def home(request):
         .order_by("-created_at", "-like_count")
     )
 
+    if request.method == "POST":
+        post_commit(request, id=None)
+
     context = {
         "posts": posts,
         "friend_requests": friends_requests,
@@ -88,7 +92,7 @@ def edit_post(request, id):
     media = PostMedia.objects.filter(post=post)
 
     if request.method == "POST":
-        post_commit(request, id)
+        post_commit(request, post.id)
     return render(request, "posts/post-edit.html", {"post": post, "media": media})
 
 
@@ -105,6 +109,7 @@ def delete_post(request, id):
             else:
                 next_url = reverse("home")
         get_object_or_404(Post, id=id).delete()
+        messages.success(request, "Your Post Has been Deleted Successfully!")
 
     return redirect(next_url)
 

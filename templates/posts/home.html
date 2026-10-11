@@ -4,29 +4,38 @@
 <main class="container py-4">
   <div class="row g-4">
 
-
     <section class="col-lg-7 ms-auto">
       <div class="stories">
-        <button class="story add" type="button" data-bs-toggle="modal" data-bs-target="#createStory"><span class="ring"><span class="av"><i class="bi bi-plus-lg"></i></span></span><small>Your story</small></button>
+        <button class="story add" type="button" data-bs-toggle="modal" data-bs-target="#createStory">
+          <span class="ring"><span class="av"><i class="bi bi-plus-lg"></i></span></span><small>Your story</small></button>
         <button class="story" type="button" data-user="Lina Hassan"><span class="ring"><span class="av" style="--h:330">L</span></span><small>Lina</small>
           <span class="d-none"><i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#f7b267,#f4845f)" data-text="Golden hour vibes" data-time="2h"></i>
           <i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#84c7a5,#3d8b74)" data-text="Weekend plans?" data-time="1h"></i></span></button>
       </div>
 
-      <form class="card mb-3" method="post" enctype="multipart/form-data"><div class="card-body">
-        <div class="d-flex gap-3"><span class="av" style="--h:260">A</span>
-          <textarea class="form-control border-0" name="content" rows="2" placeholder="What's on your mind, Alex?" aria-label="New post"></textarea></div>
-        <div class="preview d-none"><button type="button" class="preview-x" data-clear aria-label="Remove media">&times;</button><img alt="Preview"><video controls></video></div>
-        <div class="d-flex align-items-center gap-2 mt-3">
-          <label class="chip"><i class="bi bi-image"></i> Photo<input type="file" name="image" accept="image/*" hidden></label>
-          <label class="chip"><i class="bi bi-camera-video"></i> Video<input type="file" name="video" accept="video/*" hidden></label>
-          <button class="btn btn-brand ms-auto px-4">Post</button></div>
-      </div></form>
+      <form class="card mb-3" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-body">
+          <div class="d-flex gap-3">
+            <span class="av" style="{% if post.user.img %}background-image:url('{{ request.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{request.user.color}}{% endif %}">{% if not request.user.img %}{{ request.user.username|first|upper }}{% endif %}</span>
+            <textarea class="form-control border-0" name="content" rows="2" placeholder="What's on your mind, Alex?" aria-label="New post"></textarea>
+          </div>
+          <div class="preview d-none">
+            <button type="button" class="preview-x" data-clear aria-label="Remove media">&times;</button><img alt="Preview"><video controls></video>
+          </div>
+          <div class="d-flex align-items-center gap-2 mt-3">
+            <label class="chip"><i class="bi bi-image"></i> Photo<input type="file" multiple name="image" accept="image/*" hidden></label>
+            <label class="chip"><i class="bi bi-camera-video"></i> Video<input type="file" multiple name="video" accept="video/mp4,video/webm" data-max-mb="50" hidden></label>
+            <button type='submit' class="btn btn-brand ms-auto px-4">Post</button>
+          </div>
+        </div>
+      </form>
       {% for post in posts %}
         <article class="card mb-3" id="post-{{ post.pk }}">
           <div class="card-body">
             <div class="d-flex align-items-center gap-2 mb-2">
-              <a href="{% url 'profile' post.user.id %}"><span class="av av-sm" style="--h:260;{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span></a>
+              <a href="{% url 'profile' post.user.id %}">
+                <span class="av av-sm" style="{% if post.user.img %}background-image:url('{{ post.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{post.user.color}}{% endif %}">{% if not post.user.img %}{{ post.user.username|first|upper }}{% endif %}</span></a>
               <div class="flex-grow-1">
                 <a class='text-dark' href="{% url 'profile' post.user.id %}"><b>{{ post.user.username }} {% if post.user.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</b></a>
                 <div class="small muted">{{ post.created_at|timesince }} ago</div>
@@ -47,23 +56,41 @@
               </ul>
             </div>
             </div>
+            {% with items=post.media.all %}
+              {% if items %}
+                {% if post.caption %}<p class="post-caption">{{ post.caption|linebreaksbr }}</p>{% endif %}
 
-            {% if post.media.all %}
-              {% if post.caption %}<p>{{ post.caption|linebreaksbr }}</p>{% endif %}
-              {% for media in post.media.all %}
-                {% if media.media_type == "image" %}
-                  <img class="media mb-2 " style='width:100%; height:100%' src="{{ media.file.url }}" alt="Post photo"
-                      style="max-height:520px;object-fit:cover;">
-                {% elif media.media_type == "video" %}
-                  <video class="media mb-2 w-100" controls preload="metadata" style="max-height:520px;">
-                    <source src="{{ media.file.url }}">
-                  </video>
-                {% endif %}
-              {% endfor %}
+                <div id="media-{{ post.pk }}" class="carousel slide post-carousel mb-2 {% if items|length == 1 %}is-single{% endif %}" data-bs-interval="false">
+                  {% if items|length > 1 %}<span class="pc-count">1 / {{ items|length }}</span>{% endif %}
 
+                  <div class="carousel-inner">
+                    {% for m in items %}
+                      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        {% if m.media_type == 'image' %}
+                          <img src="{{ m.file.url }}" alt="Post photo {{ forloop.counter }}" loading="lazy">
+                        {% elif m.media_type == 'video' %}
+                          <video controls preload="metadata" playsinline><source src="{{ m.file.url }}"></video>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                  {% if items|length > 1 %}
+                    {% if items|length <= 8 %}
+                      <div class="carousel-indicators">
+                        {% for m in items %}
+                          <button type="button" data-bs-target="#media-{{ post.pk }}" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Item {{ forloop.counter }}"></button>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#media-{{ post.pk }}" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#media-{{ post.pk }}" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
+                  {% endif %}
+                </div>
               {% else %}
-              <p>{{ post.body|linebreaksbr }}</p>
-            {% endif %}
+                <p>{{ post.body|linebreaksbr }}</p>
+              {% endif %}
+            {%  endwith %}
 
             <div class="d-flex gap-1 border-top pt-2">
               <form method="POST" action="{% url 'toggle-like' 'post' post.id %}" class="js-like-form">
@@ -83,7 +110,7 @@
               {% for comment in post.none_parent_comment %}
                 {% with replies=comment.replies.all %}
                 <div class="c-item d-flex gap-2 mb-3" id="comment-{{ comment.pk }}">
-                  <span class="av av-sm flex-shrink-0" style="--h:260;{% if comment.user.img %}background-image:url('{{ comment.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not comment.user.img %}{{ comment.user.username|first|upper }}{% endif %}</span>
+                  <span class="av av-sm flex-shrink-0" style="{% if comment.user.img %}background-image:url('{{ comment.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{comment.user.color}}{% endif %}">{% if not comment.user.img %}{{ comment.user.username|first|upper }}{% endif %}</span>
 
                   <div class="flex-grow-1" style="min-width:0">
                     <div class="c-bubble">
@@ -129,7 +156,7 @@
                       <div class="c-replies mt-2 d-none" id="replies-{{ comment.pk }}">
                         {% for reply in replies %}
                           <div class="c-reply d-flex gap-2 mb-3" id="comment-{{ reply.pk }}">
-                            <span class="av av-sm flex-shrink-0" style="--h:260;{% if reply.user.img %}background-image:url('{{ reply.user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not reply.user.img %}{{ reply.user.username|first|upper }}{% endif %}</span>
+                            <span class="av av-sm flex-shrink-0" style="{% if reply.user.img %}background-image:url('{{ reply.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{reply.user.color}}{% endif %}">{% if not reply.user.img %}{{ reply.user.username|first|upper }}{% endif %}</span>
 
                             <div class="flex-grow-1" style="min-width:0">
                               <div class="c-bubble">
@@ -186,7 +213,7 @@
             {% for i in friend_requests|slice:3 %}
             <div class="person removable">
               <span class="av" id="avatarPrev"
-                style="--h:200;{% if i.follower.img %}background-image:url('{{ i.follower.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                style="{% if i.follower.img %}background-image:url('{{ i.follower.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.follower.color}}{% endif %}">
                 {% if not i.follower.img %}{{ i.follower.username|first|upper }}{% endif %}
               </span> 
               <div class="flex-grow-1">
@@ -209,7 +236,7 @@
             {% for i in mutual_friends|slice:5 %}
               <div class="person removable">
               <span class="av" id="avatarPrev"
-                style="--h:200;{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                style="{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.color}}{% endif %}">
                 {% if not i.img %}{{ i.username|first|upper }}{% endif %}
               </span> 
                 <div class="flex-grow-1">

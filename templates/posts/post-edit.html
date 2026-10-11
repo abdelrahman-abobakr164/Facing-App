@@ -1,49 +1,48 @@
 {% extends 'base.html' %}
-{% block title %}edit{% endblock title %}
+{% block title %}Edit post{% endblock title %}
 
 {% block body %}
 <main class="container py-4"><div class="row justify-content-center"><div class="col-lg-6">
   <form class="card" method="post" enctype="multipart/form-data"><div class="card-body p-4">
     {% csrf_token %}
-    <input type="hidden" name="next" value='{{request.get_full_path}}'>
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
     <h5 class="mb-4">Edit post</h5>
-    
+
     {% if media %}
-      {% if post.caption %}
-        <label class="form-label" for="content">Caption</label>
-        <textarea id="content" name="caption" class="form-control mb-3" rows="4">{{post.caption}}</textarea>
-      {% endif %}
-      <label class="form-label">Current media</label>
-      {% for i in media %}
-        <div class="media mb-2" id="currentMedia">
-          {% if i.media_type == 'image' %}
-            <img src="{{i.file.url}}" style="max-height:300px" alt="Media">
-          {% elif i.media_type == 'video' %}
-            <video class="mb-2 w-100" controls preload="metadata" style="height:300px">
-              <source src="{{ i.file.url }}">
-            </video>
-          {% endif %}
-        </div>
-      {% endfor %}
-      
-      <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="remove" name="remove_media" data-remove-media="#currentMedia">
-        <label class="form-check-label" for="remove">Remove current media</label>
+      <label class="form-label" for="caption">Caption</label>
+      <textarea id="caption" name="caption" class="form-control mb-3" rows="4">{{ post.caption|default:'' }}</textarea>
+
+      <label class="form-label">Current media <span class="muted small">({{ media|length }})</span></label>
+      <div class="edit-media-grid mb-1">
+        {% for i in media %}
+          <label class="em-item" title="Click to remove or keep">
+            <input type="checkbox" name="remove_media" value="{{ i.pk }}" hidden>
+            {% if i.media_type == 'image' %}
+              <img src="{{ i.file.url }}" alt="Photo" loading="lazy">
+            {% else %}
+              <video src="{{ i.file.url }}#t=0.1" preload="metadata" muted></video><span class="em-badge"><i class="bi bi-play-fill"></i></span>
+            {% endif %}
+            <span class="em-x"><i class="bi bi-trash3-fill"></i></span>
+          </label>
+        {% endfor %}
       </div>
-      <div class="preview d-none"><button type="button" class="preview-x" data-clear aria-label="Remove">&times;</button><img alt="Preview"><video controls></video></div>
-      <div class="d-flex gap-2 mt-3">
-        <label class="chip"><i class="bi bi-image"></i> Add photo/s<input type="file" multiple='true' name="add_image" accept="image/*" hidden></label>
-        <label class="chip"><i class="bi bi-camera-video"></i> Add video/s<input type="file" multiple='true' name="add_video" accept="video/*" hidden></label>
+      <p class="small muted mb-3">Click an item to mark it for removal. Marked items are removed when you save.</p>
+
+      <div class="d-flex flex-wrap gap-2">
+        <label class="chip"><i class="bi bi-image"></i> Add photos<input type="file" multiple name="add_image" accept="image/*" hidden data-grid="#newImages"></label>
+        <label class="chip"><i class="bi bi-camera-video"></i> Add videos<input type="file" multiple name="add_video" accept="video/*" hidden data-grid="#newVideos"></label>
       </div>
+      <div id="newImages" class="edit-media-grid mt-3 d-none"></div>
+      <div id="newVideos" class="edit-media-grid mt-2 d-none"></div>
     {% else %}
-        <label class="form-label" for="content">Content</label>
-        <textarea id="content" name="content" class="form-control mb-3" rows="4">{{post.body}}</textarea>
+      <label class="form-label" for="content">Content</label>
+      <textarea id="content" name="content" class="form-control mb-3" rows="4">{{ post.body }}</textarea>
     {% endif %}
 
-    <div class="d-flex gap-2 mt-4"><button class="btn btn-brand px-4">Save changes</button>
-      <a class="btn btn-soft" onclick="history.back()">Cancel</a>
+    <div class="d-flex gap-2 mt-4">
+      <button class="btn btn-brand px-4">Save changes</button>
+      <button type="button" class="btn btn-soft" onclick="history.back()">Cancel</button>
     </div>
-  </div>
-</form>
+  </div></form>
 </div></div></main>
 {% endblock body %}

@@ -12,7 +12,7 @@
 
       <div class="profile-top d-flex align-items-end gap-3 mb-4">
         <span class="av av-xl" id="avatarPrev"
-              style="--h:260;{% if user.img %}background-image:url('{{ user.img.url }}');background-size:cover;background-position:center;{% endif %}">{% if not user.img %}{{ user.username|first|upper }}{% endif %}</span>
+              style="{% if user.img %}background-image:url('{{ user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{user.color}}{% endif %}">{% if not user.img %}{{ user.username|first|upper }}{% endif %}</span>
         <div class="pb-2">
           <div class="d-flex flex-wrap gap-2">
             <label class="chip"><i class="bi bi-camera"></i> Change photo

@@ -99,3 +99,24 @@
   document.addEventListener('keydown', e => { if (sv.classList.contains('d-none')) return;
     if (e.key === 'Escape') close(); if (e.key === 'ArrowRight') show(i + 1); if (e.key === 'ArrowLeft') show(i - 1); });
 })();
+/* ===== Post media (paste into app.js) ===== */
+
+/* Carousel: pause videos when sliding and update the "2 / 5" counter */
+document.addEventListener('slide.bs.carousel', e => {
+  e.target.querySelectorAll('video').forEach(v => v.pause());
+  const c = e.target.querySelector('.pc-count');
+  if (c) c.textContent = `${e.to + 1} / ${e.target.querySelectorAll('.carousel-item').length}`;
+});
+
+/* Edit post: preview every selected file in the grid given by data-grid="#id" */
+document.querySelectorAll('input[type=file][data-grid]').forEach(inp => inp.addEventListener('change', () => {
+  const grid = document.querySelector(inp.dataset.grid); grid.innerHTML = '';
+  [...inp.files].forEach(f => {
+    const url = URL.createObjectURL(f), box = document.createElement('div'); box.className = 'em-item';
+    box.innerHTML = f.type.startsWith('video/')
+      ? `<video src="${url}#t=0.1" preload="metadata" muted></video><span class="em-badge"><i class="bi bi-play-fill"></i></span>`
+      : `<img src="${url}" alt="">`;
+    grid.append(box);
+  });
+  grid.classList.toggle('d-none', !inp.files.length);
+}));

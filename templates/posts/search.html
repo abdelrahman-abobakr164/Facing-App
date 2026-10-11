@@ -13,7 +13,7 @@
                 {% for i in get_users %}
                   <div class="person removable">
                     <span class="av av-sm" id="avatarPrev"
-                      style="--h:260;{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% endif %}">
+                      style="{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.color}}{% endif %}">
                       {% if not i.img %}{{ i.username|first|upper }}{% endif %}
                     </span> 
                       <div class="flex-grow-1">
