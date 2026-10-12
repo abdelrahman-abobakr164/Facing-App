@@ -1,0 +1,9 @@
+<i class="story-item"
+   data-id="{{ s.id }}"
+   data-type="{% if s.media_type == 'video' %}video{% elif s.media %}image{% else %}text{% endif %}"
+   data-src="{% if s.media %}{{ s.media.url }}{% endif %}"
+   {% if not s.media %}data-bg="{{ s.bg|default:'linear-gradient(135deg,#84c7a5,#3d8b74)' }}"{% endif %}
+   data-text="{{ s.caption|default:'' }}"
+   data-time="{{ s.created_at|timesince }} ago"
+   data-view-url=""
+   {% if own %}data-delete-url="{% url 'delete_story' s.id %}" data-views="{{ s.views.count }}"{% endif %}></i>

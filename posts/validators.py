@@ -4,8 +4,8 @@ import os
 
 MB = 1024 * 1024
 
-IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
-VIDEO_EXTENSIONS = {"mp4", "webm"}
+IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
+VIDEO_EXTENSIONS = {"mp4", "webm", "mov"}
 
 MAX_IMAGE_SIZE = 10 * MB
 MAX_VIDEO_SIZE = 50 * MB

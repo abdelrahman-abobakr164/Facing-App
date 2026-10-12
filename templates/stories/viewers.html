@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Story viewers{% endblock title %}
+{% block body %}
+<main class="container py-4"><div class="row justify-content-center"><div class="col-lg-5">
+  <a class="small muted" href="javascript:history.back()"><i class="bi bi-arrow-left"></i> Back</a>
+  <div class="d-flex align-items-center justify-content-between my-3">
+    <h4 class="mb-0">Story viewers</h4>
+    <span style='margin-left:200px' class="pill-count"><i class="bi bi-eye"></i> {{ story.views_count }}</span>
+    <span class="pill-count"><i class="bi bi-heart-fill"></i> {{ story.likes_count}}</span>
+  </div>
+
+  <div class="card"><div class="card-body">
+    {% if story_views %}<input class="form-control mb-2" id="viewerSearch" placeholder="Search viewers" aria-label="Search viewers">{% endif %}
+    <div id="viewerList">
+      {% for item in story_views %}
+        <div class="person">
+          <a href="{% url 'profile' item.viewer.id %}">
+            <span class="av av-sm" style="{% if item.viewer.img %}background-image:url('{{ item.viewer.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{item.viewer.color}}{% endif %}">{% if not item.viewer.img %}{{ item.viewer.username|first|upper }}{% endif %}</span>
+          </a>
+          <div class="flex-grow-1" style="min-width:0">
+            <a class="name" href="{% url 'profile' item.viewer.id %}">{{ item.viewer.username }}{% if item.viewer.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</a>
+            <small class="muted d-block">{{ item.viewed_at|timesince }} ago</small>
+          </div>
+          {% if item.is_liked %}
+          <i class="bi bi-heart-fill"></i>
+          {% endif %}
+        </div>
+      {% empty %}
+        <div class="text-center muted py-5"><i class="bi bi-eye-slash fs-1"></i><p class="mt-2 mb-0">No views yet.</p></div>
+      {% endfor %}
+    </div>
+  </div></div>
+</div></div></main>
+
+<script>
+  document.getElementById('viewerSearch')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#viewerList .person').forEach(p => p.classList.toggle('d-none', !p.textContent.toLowerCase().includes(q)));
+  });
+</script>
+{% endblock body %}

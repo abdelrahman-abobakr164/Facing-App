@@ -7,13 +7,15 @@ from django.contrib.auth import get_user_model
 from .decorator import owner_ship_required
 from django.contrib import messages
 from django.db import transaction
+from django.utils import timezone
 from django.urls import reverse
 
 from accounts.utils import people_you_may_know
 from accounts.models import *
 
-from .utils import post_commit
+from .utils import post_commit, get_safe_next_url
 from .models import *
+from stories.models import *
 
 User = get_user_model()
 
@@ -27,6 +29,21 @@ def home(request):
     friends_requests = Follow.objects.filter(
         following=request.user, status="pending"
     ).select_related("follower")
+
+    my_stories = Story.objects.filter(
+        author=request.user, expires_at__lte=timezone.now()
+    ).order_by("-created_at")
+    story_users = Story.objects.visible_to(user=request.user)
+
+    stories = (
+        (story_users | my_stories)
+        .annotate(
+            is_viewed=Exists(
+                StoryView.objects.filter(story=OuterRef("id"), viewer=request.user)
+            )
+        )
+        .order_by("-created_at")
+    )
 
     mutual_friends = people_you_may_know(request.user)
 
@@ -67,6 +84,7 @@ def home(request):
 
     context = {
         "posts": posts,
+        "stories": stories,
         "friend_requests": friends_requests,
         "mutual_friends": mutual_friends,
     }
@@ -100,14 +118,8 @@ def edit_post(request, id):
 @owner_ship_required(Post, id_kwarg="id", user="user")
 def delete_post(request, id):
     if request.method == "POST":
-        next_url = request.POST.get("next")
-        if not url_has_allowed_host_and_scheme(
-            next_url, allowed_hosts={request.get_host()}
-        ):
-            if request.path == "profile":
-                next_url = reverse("profile", args=[id])
-            else:
-                next_url = reverse("home")
+        next_url = get_safe_next_url(request)
+
         get_object_or_404(Post, id=id).delete()
         messages.success(request, "Your Post Has been Deleted Successfully!")
 
@@ -123,11 +135,7 @@ def toggle_like_view(request, kind, id):
     model = {"post": Post, "comment": Comment}[kind]
     obj = get_object_or_404(model, id=id)
 
-    next_url = request.POST.get("next")
-    if not url_has_allowed_host_and_scheme(
-        next_url, allowed_hosts={request.get_host()}
-    ):
-        next_url = reverse("profile", args=[kind, id])
+    next_url = get_safe_next_url(request)
 
     like_model, field = LIKE_MAP[type(obj)]
     with transaction.atomic():

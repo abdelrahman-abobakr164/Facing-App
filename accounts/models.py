@@ -62,7 +62,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=300, unique=True)
     img = models.ImageField(upload_to="ProfileImg", null=True, blank=True)
-    color = models.IntegerField(choices=Colors.choices)
+    color = models.IntegerField(
+        choices=Colors.choices, default=random.choice(Colors.values)
+    )
     bio = models.CharField(max_length=100, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     place = models.CharField(max_length=100, null=True, blank=True)
@@ -116,8 +118,6 @@ class User(AbstractBaseUser, PermissionsMixin):
             return f""
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            self.color = random.choice(self.Colors.values)
         self.slug = slugify(self.username)
         return super(User, self).save(*args, **kwargs)
 

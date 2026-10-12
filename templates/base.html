@@ -6,6 +6,7 @@
 <link href="{% static 'assets/vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
 <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
 <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+<link href="{% static 'assets/css/stories.css' %}" rel="stylesheet">
 <title>{% block title %}{% endblock title %} | Facing</title>
 </head>
 <body>
@@ -76,6 +77,7 @@
   </aside>
   <script src="{% static 'assets/vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'assets/js/app.js' %}"></script>
+  <script src="{% static 'assets/js/stories.js' %}"></script>
   <script>
     document.querySelectorAll('.toast-msg').forEach(t => {
       const close = () => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); };

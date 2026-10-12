@@ -12,7 +12,6 @@ from .validators import validation_image, validation_video
 
 
 def get_safe_next_url(request, default="home"):
-    """Return the `next` URL only if it points to our own site."""
     next_url = request.POST.get("next")
     if url_has_allowed_host_and_scheme(
         next_url,

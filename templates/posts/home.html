@@ -7,10 +7,15 @@
     <section class="col-lg-7 ms-auto">
       <div class="stories">
         <button class="story add" type="button" data-bs-toggle="modal" data-bs-target="#createStory">
-          <span class="ring"><span class="av"><i class="bi bi-plus-lg"></i></span></span><small>Your story</small></button>
-        <button class="story" type="button" data-user="Lina Hassan"><span class="ring"><span class="av" style="--h:330">L</span></span><small>Lina</small>
-          <span class="d-none"><i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#f7b267,#f4845f)" data-text="Golden hour vibes" data-time="2h"></i>
-          <i class="story-item" data-type="text" data-bg="linear-gradient(135deg,#84c7a5,#3d8b74)" data-text="Weekend plans?" data-time="1h"></i></span></button>
+          <span class="ring"><span class="av"><i class="bi bi-plus-lg"></i></span></span><small>Create Your story</small></button>
+          {% for s in stories %} 
+            <a href="{% url 'viewer' s.id %}" class="story" type="button" data-user="{{s.author}}">
+              <span class="ring" {% if s.is_viewed %} style='background:gray'  {% endif %}>
+                <span class="av" {% if not s.media %} value="linear-gradient(135deg,#84c7a5,#3d8b74)" style="background:linear-gradient(135deg,#84c7a5,#3d8b74)"{% else %} {% if s.media_type == 'image' %} style="background-image:url('{{ s.media.url }}')" {% endif %}{% endif %}>{{ s.author.username|first|upper }}</span>
+              </span>
+              <small>{% if s.author == request.user %} You {% else %}{{s.author.username}} {% endif %}</small>
+            </a>
+          {% endfor %}
       </div>
 
       <form class="card mb-3" method="POST" enctype="multipart/form-data">
@@ -30,6 +35,7 @@
           </div>
         </div>
       </form>
+      
       {% for post in posts %}
         <article class="card mb-3" id="post-{{ post.pk }}">
           <div class="card-body">
@@ -262,22 +268,24 @@
   </div>
 </main>
 
-<!-- Create story -->
-<div class="modal fade" id="createStory" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><form class="modal-content" method="post" enctype="multipart/form-data">
-  <div class="modal-header border-0"><h5 class="modal-title">Create story</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-  <div class="modal-body pt-0">
-    <div class="story-draft mb-3"><div class="preview d-none"><img alt=""><video muted loop autoplay></video></div><p class="draft-text">Your text appears here</p></div>
-    <textarea id="storyCaption" name="caption" class="form-control mb-3" rows="2" maxlength="120" placeholder="Add text to your story"></textarea>
-    <div class="d-flex align-items-center gap-2">
-      <label class="chip"><i class="bi bi-image"></i> Photo / video<input type="file" name="media" accept="image/*,video/*" hidden></label>
-      <span class="ms-auto d-flex gap-2" title="Background">
-        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#6c4cf1,#ff5fa2)" style="background:linear-gradient(135deg,#6c4cf1,#ff5fa2)" checked>
-        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#f7b267,#f4845f)" style="background:linear-gradient(135deg,#f7b267,#f4845f)">
-        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#84c7a5,#3d8b74)" style="background:linear-gradient(135deg,#84c7a5,#3d8b74)">
-        <input class="swatch" type="radio" name="bg" value="linear-gradient(135deg,#232526,#414345)" style="background:linear-gradient(135deg,#232526,#414345)"></span></div>
+<!-- Create story --> 
+<div class="modal fade" id="createStory" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" method="POST" action="{% url 'create_story' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="next" value='{{request.get_full_path}}'>
+      <div class="modal-header border-0"><h5 class="modal-title">Create story</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-body pt-0">
+        <div class="story-draft mb-3" style="background:linear-gradient(135deg,#84c7a5,#3d8b74)"><div class="preview d-none"><img alt=""><video muted loop autoplay></video></div><p class="draft-text">Your text appears here</p></div>
+        <textarea id="storyCaption" name="caption" class="form-control mb-3" rows="2" maxlength="120" placeholder="Add text to your story"></textarea>
+        <div class="d-flex align-items-center gap-2">
+          <label class="chip"><i class="bi bi-image"></i> Photo / video<input type="file" name="media" accept="image/*,video/*" hidden></label>
+        </div>
+      </div>
+      <div class="modal-footer border-0"><button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand px-4">Share story</button></div>
+    </form>
   </div>
-  <div class="modal-footer border-0"><button type="button" class="btn btn-soft" data-bs-dismiss="modal">Cancel</button><button class="btn btn-brand px-4">Share story</button></div>
-</form></div></div>
+</div>
 
 <!-- Story viewer -->
 <div id="storyViewer" class="sv d-none">
