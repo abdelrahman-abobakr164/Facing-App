@@ -5,7 +5,7 @@
   <div class="ms-auto d-flex align-items-center gap-1">
     <a class="nav-i" data-p="feed" {% if request.path == '/' %} aria-current="page" {% endif %} href="{% url 'home' %}" title="Home"><i class="bi bi-house-door"></i></a>
 
-    <a class="nav-i" data-p="friends" {% if request.path == '/accounts/requests/' %} aria-current="page" {% endif %} href="{% url 'requests' %}" title="Friend requests"><i class="bi bi-people"></i><b class="dot">3</b></a>
+    <a class="nav-i" data-p="friends" {% if request.path == '/accounts/requests/' %} aria-current="page" {% endif %} href="{% url 'requests' %}" title="Friend requests"><i class="bi bi-person-check-fill"></i><b class="dot">3</b></a>
     <button class="nav-i" type="button" id="msgToggle" title="Messages" aria-label="Messages" aria-expanded="false" aria-controls="msgPanel"><i class="bi bi-chat-dots"></i><b class="dot">1</b></button>
     <a class="nav-i" data-p="notifications" href="notifications.html" title="Notifications"><i class="bi bi-bell"></i><b class="dot">2</b></a>
     {% endif %}

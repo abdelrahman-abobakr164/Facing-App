@@ -23,7 +23,7 @@
         <div class="card-body">
           <div class="d-flex gap-3">
             <span class="av" style="{% if post.user.img %}background-image:url('{{ request.user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{request.user.color}}{% endif %}">{% if not request.user.img %}{{ request.user.username|first|upper }}{% endif %}</span>
-            <textarea class="form-control border-0" name="content" rows="2" placeholder="What's on your mind, Alex?" aria-label="New post"></textarea>
+            <textarea class="form-control border-0" name="content" rows="2" placeholder="What's on your mind, {{request.user.username}}?" aria-label="New post"></textarea>
           </div>
           <div class="preview d-none">
             <button type="button" class="preview-x" data-clear aria-label="Remove media">&times;</button><img alt="Preview"><video controls></video>

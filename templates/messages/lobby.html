@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Lobby{% endblock title %}
+{% block body %}
+<main class="container py-4"><div class="row justify-content-center"><div class="col-lg-6">
+  <div class="card">
+    <div class="chat-side-head">
+      <h5 class="mb-0">Lobby</h5>
+      <a class="btn btn-brand btn-sm ms-auto" href="#"><i class="bi bi-people-fill"></i> New group</a>
+    </div>
+
+    <div class="px-3 pb-2">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="search" placeholder="Search people, groups or messages" aria-label="Search conversations" data-live-search="#convList" autocomplete="off">
+        <button type="button" class="search-clear d-none" aria-label="Clear search"><i class="bi bi-x-circle-fill"></i></button>
+      </div>
+    </div>
+    <div class="chat-tabs" role="tablist">
+      <button type="button" class="chip active" data-tab="all" data-tab-for="#convList">All</button>
+      <button type="button" class="chip" data-tab="direct" data-tab-for="#convList"><i class="bi bi-person"></i> Direct</button>
+      <button type="button" class="chip" data-tab="group" data-tab-for="#convList"><i class="bi bi-people"></i> Groups</button>
+    </div>
+
+    <div class="conv-list" id="convList">
+      {% for i in conversations %}
+        {% if i.is_group == False %}
+          <a class="conv {% if not i.readed %} unread {% endif %}" data-item data-type="direct" href="{% url 'chat' i.id %}">
+            <span class="av-wrap">
+              
+              {% if request.user == i.participants.first %}
+                <span class="av" style="{% if i.participants.last.img %}background-image:url('{{ i.participants.last.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.participants.last.color}}{% endif %}">{% if not i.participants.last.img %}{{ i.participants.last.username|first|upper }}{% endif %}</span>
+              {% else %}
+                <span class="av" style="{% if i.participants.first.img %}background-image:url('{{ i.participants.first.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.participants.first.color}}{% endif %}">{% if not i.participants.first.img %}{{ i.participants.first.username|first|upper }}{% endif %}</span>
+              {% endif %}
+              <span class="online-dot" title="Online"></span>
+            </span>
+            <div class="conv-main">
+              <div class="d-flex align-items-baseline gap-2"><b class="conv-name">{{i.participants.first.username}} {% if i.participants.first.virified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</b><small class="conv-time">{{i.updated_at|timesince}}</small></div>
+                <div class="d-flex align-items-center gap-2">
+                  {% if i.messages.all %}
+                    <small class="conv-last d-flex">
+                        {% if request.user != i.messages.first.sender %}
+                          <b> {{ i.messages.first.sender.username }} </b>, 
+                        {% else %}
+                          You, 
+                        {% endif %}
+
+                        {% if i.messages.first.content %}
+                          <p class='ms-1'> {{i.messages.first.content|truncatewords:2}} </p> 
+                        {% else  %}
+                          {% for msg in i.messages.all %}
+                            {% if msg.attachments.last.file_type == 'image' %}
+                              <i class="bi bi-image-fill ms-1 me-1"></i> Photo 
+                            {% elif msg.attachments.last.file_type == 'video' %}
+                              <i class="bi bi-camera-video-fill ms-1 me-1"></i> Video
+                            {% endif %}
+                          {% endfor %}
+                        {% endif %}
+                      
+                    </small>
+                    {% if i.readed %}
+                      <i class="bi bi-check2-all ticks seen "></i>
+                    {% else %}
+                      {% if i.unread_count %}
+                      <span class="pill-count ms-auto">{{i.unread_count}}</span>
+                      {% endif %}
+                    {% endif %}
+
+                  {% endif %}
+              </div>
+            </div>
+          </a>
+        {% else %}
+          <a class="conv"  class="group-only" data-item data-type="group" href="{% url 'chat' i.id %}">
+            <span class="av-quad sm">
+            {% for member in i.participants.all|slice:'3' %}
+              <span class="av" style="{% if member.img %}background-image:url('{{ member.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{member.color}}{% endif %}">{% if not member.img %}{{ member.username|first|upper }}{% endif %}</span>
+              {% endfor %}
+              {% if i.participants.count > 3 %}
+              <span class="av-more">+{{i.participants.count|add:"-3"}}</span>
+              {% endif %}
+            </span>
+            <div class="conv-main">
+              <div class="d-flex align-items-baseline gap-2"><b class="conv-name">{{i.group_name}}</b><small class="conv-time">{{i.messages.first.timestamp|timesince}}</small></div>
+              <div class="d-flex align-items-center gap-2">
+                  {% if i.messages.all %}
+                    <small class="conv-last d-flex">
+                        {% if request.user != i.messages.first.sender %}
+                          <b> {{ i.messages.first.sender.username }} </b>, 
+                        {% else %}
+                          You, 
+                        {% endif %}
+
+                        {% if i.messages.first.content %}
+                          <p class='ms-1'> {{i.messages.first.content|truncatewords:2}} </p> 
+                        {% else  %}
+                          {% for msg in i.messages.all %}
+                            {% if msg.attachments.last.file_type == 'image' %}
+                              <i class="bi bi-image-fill ms-1 me-1"></i> Photo 
+                            {% elif msg.attachments.last.file_type == 'video' %}
+                              <i class="bi bi-camera-video-fill ms-1 me-1"></i> Video
+                            {% endif %}
+                          {% endfor %}
+                        {% endif %}
+                      
+                    </small>
+                    {% if i.readed %}
+                      <i class="bi bi-check2-all ticks seen "></i>
+                    {% else %}
+                      {% if i.unread_count %}
+                      <span class="pill-count ms-auto">{{i.unread_count}}</span>
+                      {% endif %}
+                    {% endif %}
+
+                  {% endif %}
+              </div>
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      <div class="list-empty d-none" data-empty><i class="bi bi-search"></i><p class="mb-0">No conversations found</p></div>
+    </div>
+  </div>
+</div></div></main>
+{% endblock body %}

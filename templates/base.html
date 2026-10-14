@@ -7,6 +7,7 @@
 <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
 <link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
 <link href="{% static 'assets/css/stories.css' %}" rel="stylesheet">
+<link href="{% static 'assets/css/chat.css' %}" rel="stylesheet">
 <title>{% block title %}{% endblock title %} | Facing</title>
 </head>
 <body>
@@ -49,11 +50,12 @@
 
 
 
-<aside id="msgPanel" class="msg-panel card d-none" aria-label="Messages">
+  <aside id="msgPanel" class="msg-panel card d-none" aria-label="Messages">
     <div class="msg-lobby">
       <div class="msg-head"><h6 class="mb-0">Messages</h6><button class="msg-x" type="button" data-msg-close aria-label="Close">&times;</button></div>
-      <div class="px-3 pb-2"><input class="form-control rounded-pill" placeholder="Search people" aria-label="Search people"></div>
-      <div class="msg-users">
+      <div class="px-3 pb-2"><input class="form-control rounded-pill" id='chatnavsearch' placeholder="Search people" aria-label="Search people"></div>
+      
+      <div id='msgnavusers' class="msg-users">
         <button class="msg-item unread" type="button" data-chat="#c-lina"><span class="av" style="--h:330">L</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></b><small class="muted">Thank you, Lina! Your photos are inspiring.</small></span><small class="muted">2m</small></button>
         <button class="msg-item" type="button" data-chat="#c-omar"><span class="av" style="--h:200">O</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Omar Khaled</b><small class="muted">Can you review my pull request today?</small></span><small class="muted">1h</small></button>
         <button class="msg-item" type="button" data-chat="#c-sara"><span class="av" style="--h:150">S</span><span class="flex-grow-1 text-start min-w-0"><b class="d-block">Sara Nabil</b><small class="muted">No messages yet</small></span><small class="muted"></small></button>
@@ -75,14 +77,21 @@
       <form class="msg-form" method="post"><input class="form-control rounded-pill" placeholder="Write a message" aria-label="Message"><button class="btn btn-brand rounded-circle" aria-label="Send"><i class="bi bi-send"></i></button></form>
     </section>
   </aside>
+
+  
   <script src="{% static 'assets/vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'assets/js/app.js' %}"></script>
   <script src="{% static 'assets/js/stories.js' %}"></script>
+  <script src="{% static 'assets/js/chat.js' %}"></script>
   <script>
     document.querySelectorAll('.toast-msg').forEach(t => {
       const close = () => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); };
       t.querySelector('.toast-x').addEventListener('click', close);
       setTimeout(close, t.classList.contains('toast-error') ? 8000 : 5000);
+    });
+    document.getElementById('chatnavsearch')?.addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('#msgnavusers .msg-item').forEach(p => p.classList.toggle('d-none', !p.textContent.toLowerCase().includes(q)));
     });
   </script>
 </body>

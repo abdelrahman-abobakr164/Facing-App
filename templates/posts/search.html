@@ -6,30 +6,40 @@
     <div class="col-lg-6">
       <a class="small muted" onclick="history.back()"><i class="bi bi-arrow-left"></i> Go Back </a>
       <h3 class="my-3 mb-5 mt-4 text-center">{{u}} </h3>
-      <div class="tab-content"><div class="tab-pane fade show active" id="followers">
-        <div class="card">
-          <div class="card-body">
-                {% if get_users %}
-                {% for i in get_users %}
-                  <div class="person removable">
-                    <span class="av av-sm" id="avatarPrev"
-                      style="{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.color}}{% endif %}">
-                      {% if not i.img %}{{ i.username|first|upper }}{% endif %}
-                    </span> 
-                      <div class="flex-grow-1">
-                        <a class="name" href="{% url 'profile' i.id %}">{{i.username}}</a>
-                        {% if i.bio %}<small class="muted d-block">{{i.bio}}</small>{% endif %}
-                      </div>
-                  </div>
-                {% endfor %}
-                {% else %}
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="users">
+          <div class="card">
+            <div class="card-body">
+              {% if get_users %}
+                <form ><input class="form-control mb-2" placeholder="Search users" id='search' aria-label="Search"></form>
+                <div id="users">
+                  {% for i in get_users %}
+                    <div class="person removable">
+                      <span class="av av-sm" id="avatarPrev"
+                        style="{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.color}}{% endif %}">
+                        {% if not i.img %}{{ i.username|first|upper }}{% endif %}
+                      </span> 
+                        <div class="flex-grow-1">
+                          <a class="name" href="{% url 'profile' i.id %}">{{i.username}}</a>
+                          {% if i.bio %}<small class="muted d-block">{{i.bio}}</small>{% endif %}
+                        </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
                 <h5 class=' mt-2'>Nothing Found.</h5>
               {% endif %}
-              </div>
+            </div>
           </div>
+        </div>
       </div>
     </div>
   </div>
-  </div>
 </main>
+  <script>
+    document.getElementById('search')?.addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('#users .person').forEach(p => p.classList.toggle('d-none', !p.textContent.toLowerCase().includes(q)));
+    });
+  </script>
 {% endblock body %}

@@ -4,21 +4,34 @@
 {% with text=story.caption|default:story.caption %}
 <style>
   .story-page{min-height:calc(100vh - 70px);display:grid;place-items:center;padding:1rem}
-  .story-card{position:relative;display:flex;flex-direction:column;width:min(420px,100%);height:min(760px,calc(100vh - 100px));background:#000;color:#fff;border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
-  .story-head{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:center;gap:.6rem;padding:.9rem;background:linear-gradient(rgba(0,0,0,.6),transparent)}
-  .story-head a{color:#fff}.story-head .name{color:#fff}
-  .story-icon{background:none;border:0;color:#fff;font-size:1.3rem;line-height:1;padding:.25rem .5rem;text-decoration:none}
-  .story-body{position:relative;flex:1;display:grid;place-items:center;min-height:0}
-  .story-body img,.story-body video{width:100%;height:100%;object-fit:contain}
-  .story-caption{position:absolute;left:0;right:0;bottom:0;margin:0;padding:3rem 1.25rem 1rem;text-align:center;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.6);background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none}
-  .story-content{margin:0;padding:1.5rem;text-align:center;font-weight:700;font-size:clamp(1.4rem,5vw,2rem);line-height:1.35;overflow-wrap:anywhere;text-shadow:0 2px 10px rgba(0,0,0,.35)}
-  .story-foot{display:flex;align-items:center;gap:1rem;padding:.8rem 1rem;background:#0e0d18}
-  .story-like{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.1);border:0;color:#fff;border-radius:999px;padding:.45rem 1rem;font-weight:600;transition:background .15s}
-  .story-like:hover{background:rgba(255,255,255,.18)}.story-like.active{color:var(--brand2)}
+  .story-card{position:relative;display:flex;flex-direction:column;aspect-ratio:9/16;max-width:100%;overflow:hidden;background:#000;color:#fff;border-radius:20px;box-shadow:var(--shadow);
+    height:min(680px,calc(100vh - 120px));height:min(680px,calc(100dvh - 120px))}
+  .story-head{position:absolute;top:0;left:0;right:0;z-index:4;display:flex;align-items:center;gap:.6rem;padding:.9rem;background:linear-gradient(rgba(0,0,0,.65),transparent)}
+  .story-head a,.story-head .name{color:#fff}
+  .story-icon{background:none;border:0;color:#fff;font-size:1.35rem;line-height:1;padding:.25rem .5rem;text-decoration:none;border-radius:8px}
+  .story-icon:hover{background:rgba(255,255,255,.15)}
+  .story-body{position:relative;flex:1 1 0;min-height:0;overflow:hidden;display:grid;place-items:center}
+  .story-body img,.story-body video{position:absolute;inset:0;width:100%;height:100%}
+  .story-body img{object-fit:contain}
+  .story-body video{object-fit:cover;background:#000}
+  .story-backdrop{position:absolute;inset:-30px;background-size:cover;background-position:center;filter:blur(28px) brightness(.55)}
+  .story-caption{position:absolute;left:0;right:0;bottom:0;z-index:2;margin:0;padding:3rem 1.25rem 1rem;text-align:center;font-weight:600;overflow-wrap:anywhere;
+    text-shadow:0 2px 8px rgba(0,0,0,.6);background:linear-gradient(transparent,rgba(0,0,0,.7));pointer-events:none}
+  .is-video .story-caption{bottom:54px;padding-bottom:.6rem}          /* sits above the video control bar */
+  .story-content{margin:0;padding:1.5rem;text-align:center;font-weight:700;font-size:clamp(1.3rem,4.5vw,1.9rem);line-height:1.35;overflow-wrap:anywhere;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .story-unmute{position:absolute;top:68px;left:50%;transform:translateX(-50%);z-index:4;border:0;border-radius:999px;padding:.4rem .9rem;background:rgba(0,0,0,.65);color:#fff;font-size:.85rem;font-weight:600;backdrop-filter:blur(6px)}
+  .story-foot{flex:none;display:flex;align-items:center;gap:1rem;padding:.75rem 1rem;background:#0e0d18}
+  .story-like{display:inline-flex;align-items:center;gap:.45rem;border:0;border-radius:999px;padding:.45rem 1.1rem;font-weight:600;color:#fff;background:rgba(255,255,255,.12);transition:background .15s}
+  .story-like:hover:not(:disabled){background:rgba(255,255,255,.2)}
+  .story-like.active{color:var(--brand2);background:rgba(255,95,162,.14)}
+  .story-like:disabled{cursor:default}
   .story-like.pop i{animation:story-pop .35s ease}
   @keyframes story-pop{40%{transform:scale(1.5)}}
-  .story-stats{display:flex;gap:1rem;margin-left:auto;font-size:.9rem;color:#cfcde6}
+  .story-stats{display:flex;gap:1rem;margin-left:auto;font-size:.88rem;color:#cfcde6;font-variant-numeric:tabular-nums}
   .story-stats a{color:inherit;text-decoration:none}.story-stats a:hover{color:#fff}
+  .story-stats .bi-heart-fill{color:var(--brand2)}
+  .story-card :focus-visible{outline:2px solid #fff;outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){.story-like.pop i{animation:none}}
 </style>
 
 <main class="story-page"><article class="story-card">
@@ -39,35 +52,38 @@
   </div>
 
   {% if story.media %}
-    <div style='height:100px' class="story-body">
+    <div class="story-body {% if story.media_type == 'video' %}is-video{% endif %}">
       {% if story.media_type == 'video' %}
-        <video ><source src="{{ story.media.url }}"></video>
+        <video id="storyVideo" controls playsinline preload="auto"><source src="{{ story.media.url }}"></video>
+        <button type="button" id="unmuteHint" class="story-unmute d-none"><i class="bi bi-volume-mute-fill"></i> Tap to unmute</button>
       {% else %}
+        <div class="story-backdrop" style="background-image:url('{{ story.media.url }}')"></div>
         <img src="{{ story.media.url }}" alt="Story photo">
       {% endif %}
       {% if text %}<p class="story-caption">{{ text|linebreaksbr }}</p>{% endif %}
     </div>
   {% else %}
-    <div class="story-body" style="background:{{ story.bg|default:'linear-gradient(135deg,#6c4cf1,#ff5fa2)' }}">
+    <div class="story-body" style="background:{{ story.bg|default:'linear-gradient(135deg,#84c7a5,#3d8b74)' }}">
       <p class="story-content">{{ text|linebreaksbr }}</p>
     </div>
   {% endif %}
-
+  
   <div class="story-foot">
-    <form method="post" action="{% url 'like_story' story.id %}" id="storyLikeForm">
-      {% csrf_token %}
-      <input type="hidden" name="next" value="{{ request.get_full_path }}">
-      {{story_like}}
-      <button class="story-like {% if is_liked %}active{% endif %}" type="submit">
-        <i class="bi {% if is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i> <span id="likeLabel">{% if story.is_liked %}Liked{% else %}Like{% endif %}</span>
-      </button>
-    </form>
-    <div class="story-stats">
-      <span title="Likes"><i class="bi bi-heart-fill"></i> <b id="likeCount">{{ story.likes_count }}</b> likes</span>
+    {% if story.author != request.user %}
+      <form method="post" action="{% url 'like_story' story.id %}" id="storyLikeForm">
+        {% csrf_token %}
+        <input type="hidden" name="next" value='{{request.get_full_path}}'>
+        <button class="story-like {% if is_liked %}active{% endif %}" type="submit" {% if is_liked %}disabled{% endif %}>
+          <i class="bi {% if is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+          <span id="likeLabel">{% if is_liked %}Liked{% else %}Like{% endif %}</span>
+        </button>
+      </form>
+    {% endif %}
+
+    <div class="story-stats" aria-live="polite">
       {% if story.author == request.user %}
-        <a href="{% url 'viewers' story.id %}" title="See who viewed"><i class="bi bi-eye-fill"></i> <b>{{ story.views.count }}</b> views</a>
-      {% else %}
-        <span title="Views"><i class="bi bi-eye-fill"></i> <b>{{ story.views.count }}</b> views</span>
+        <span title="Likes"><i class="bi bi-heart-fill"></i> <b id="likeCount">{{ story.likes_count }}</b> <span id="likeWord">like{{ story.likes_count|pluralize }}</span></span>
+        <a href="{% url 'viewers' story.id %}" title="See who viewed"><i class="bi bi-eye-fill"></i> <b>{{ story.views_count }}</b> view{{ story.views_count|pluralize }}</a>
       {% endif %}
     </div>
   </div>
@@ -77,18 +93,33 @@
   /* Esc closes the story */
   document.addEventListener('keydown', e => { if (e.key === 'Escape') history.back(); });
 
-  /* Like without reloading: update the heart and count at once, undo if the request fails */
-  document.getElementById('storyLikeForm').addEventListener('submit', async e => {
+  /* Video: try to play with sound. If the browser blocks it, play muted and offer one tap to unmute. */
+  const video = document.getElementById('storyVideo');
+  if (video) {
+    const hint = document.getElementById('unmuteHint');
+    video.muted = false; video.volume = 1;
+    video.play().catch(() => { video.muted = true; video.play().catch(() => {}); hint.classList.remove('d-none'); });
+    hint.addEventListener('click', () => { video.muted = false; hint.classList.add('d-none'); });
+    video.addEventListener('volumechange', () => { if (!video.muted) hint.classList.add('d-none'); });
+  }
+
+  /* Like only (no unlike): update at once, undo if the request fails */
+  const form = document.getElementById('storyLikeForm');
+  form.addEventListener('submit', async e => {
     e.preventDefault();
-    const form = e.target, btn = form.querySelector('button'), icon = btn.querySelector('i'), count = document.getElementById('likeCount');
-    const set = on => { btn.classList.toggle('active', on); icon.className = 'bi ' + (on ? 'bi-heart-fill' : 'bi-heart');
-      document.getElementById('likeLabel').textContent = on ? 'Liked' : 'Like'; };
-    const was = btn.classList.contains('active'), n = +count.textContent;
-    set(!was); count.textContent = n + (was ? -1 : 1); btn.classList.add('pop'); setTimeout(() => btn.classList.remove('pop'), 350);
+    const btn = form.querySelector('button'); if (btn.disabled) return;
+    const count = document.getElementById('likeCount'), word = document.getElementById('likeWord'), n = +count.textContent;
+    const set = (liked, total) => {
+      btn.classList.toggle('active', liked); btn.disabled = liked;
+      btn.querySelector('i').className = 'bi ' + (liked ? 'bi-heart-fill' : 'bi-heart');
+      document.getElementById('likeLabel').textContent = liked ? 'Liked' : 'Like';
+      count.textContent = total; word.textContent = total === 1 ? 'like' : 'likes';
+    };
+    set(true, n + 1); btn.classList.add('pop'); setTimeout(() => btn.classList.remove('pop'), 350);
     try {
       const r = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
       if (!r.ok) throw new Error();
-    } catch { set(was); count.textContent = n; }
+    } catch { set(false, n); }
   });
 </script>
 {% endwith %}

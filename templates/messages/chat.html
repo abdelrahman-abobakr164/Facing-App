@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Chat{% endblock title %}
+{% block body %}
+<main class="container py-3"><div class="row justify-content-center"><div class="col-lg-7">
+
+<!-- This sample is a GROUP chat. For a direct chat remove "is-group": .group-only hides and .direct-only shows. -->
+<div class="card chat-room is-group" data-lobby-url="">
+
+  <header class="chat-head">
+    <a class="chat-back" href="#" aria-label="Back to conversations"><i class="bi bi-arrow-left"></i></a>
+
+    <!-- Group: participant photos -->
+    <a class="avatar-stack group-only" href="#" aria-label="Group members">
+      <span class="av" style="--h:330">L</span><span class="av" style="--h:200">O</span><span class="av" style="--h:300">N</span><span class="av more">+9</span>
+    </a>
+    <!-- Direct: one photo with online dot -->
+    <span class="av-wrap direct-only"><span class="av av-sm" style="--h:330">L</span><span class="online-dot" title="Online"></span></span>
+
+    <div class="flex-grow-1" style="min-width:0">
+      <a class="name d-block text-truncate" href="#"><span class="group-only">Design Team</span><span class="direct-only">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></span></a>
+      <small class="muted group-only">12 members</small>
+      <small class="muted direct-only"><span class="status-dot"></span> Online</small>
+    </div>
+
+    <div class="dropdown">
+      <button class="action" data-bs-toggle="dropdown" aria-label="Chat options"><i class="bi bi-three-dots-vertical"></i></button>
+      <ul class="dropdown-menu dropdown-menu-end p-2">
+        <li class="direct-only"><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>View profile</a></li>
+        <li class="direct-only"><form method="post" action="" onsubmit="return confirm('Block this user? They will not be able to message you.')"><button class="dropdown-item text-danger"><i class="bi bi-slash-circle me-2"></i>Block user</button></form></li>
+        <!-- Already blocked: <li class="direct-only"><button class="dropdown-item"><i class="bi bi-unlock me-2"></i>Unblock</button></li> -->
+        <li class="group-only"><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Edit group</a></li>
+        <li class="group-only"><form method="post" action="" onsubmit="return confirm('Leave this group?')"><button class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Leave group</button></form></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Seen marks on messages you sent:
+       sent       <i class="bi bi-check2 ticks"></i>
+       delivered  <i class="bi bi-check2-all ticks"></i>
+       seen       <i class="bi bi-check2-all ticks seen"></i> -->
+  <div class="chat-messages" id="chatMessages">
+    <div class="day-sep"><span>October 12, 2026</span></div>
+
+    <div class="msg">
+      <a class="group-only" href="#"><span class="av av-sm" style="--h:330">L</span></a>
+      <div class="bubble-wrap">
+        <a class="msg-sender group-only" href="#">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a>
+        <div class="bubble"><div class="msg-text">Morning team! The new onboarding designs are ready.</div><span class="msg-time">09:41</span></div>
+      </div>
+      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
+        <ul class="dropdown-menu p-2"><li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li></ul></div>
+    </div>
+
+    <div class="msg">
+      <a class="group-only" href="#"><span class="av av-sm" style="--h:200">O</span></a>
+      <div class="bubble-wrap">
+        <a class="msg-sender group-only" href="#">Omar Khaled</a>
+        <div class="bubble"><img class="msg-media js-lightbox" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%23f7b267'/><stop offset='1' stop-color='%23f4845f'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>" alt="Photo"><div class="msg-text">Version two of the home screen</div><span class="msg-time">09:43</span></div>
+      </div>
+      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
+        <ul class="dropdown-menu p-2"><li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li></ul></div>
+    </div>
+
+    <div class="msg mine">
+      <div class="bubble-wrap"><div class="bubble"><div class="msg-text">Looks great, shipping today!</div><span class="msg-time">09:45 <i class="bi bi-check2-all ticks seen"></i></span></div></div>
+      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
+        <ul class="dropdown-menu p-2">
+          <li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li>
+          <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
+        </ul></div>
+    </div>
+
+    <div class="msg">
+      <a class="group-only" href="#"><span class="av av-sm" style="--h:300">N</span></a>
+      <div class="bubble-wrap">
+        <a class="msg-sender group-only" href="#">Nour Ali</a>
+        <div class="bubble"><video class="msg-media" controls preload="metadata" playsinline poster="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%236c4cf1'/><stop offset='1' stop-color='%23ff5fa2'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>"><source src=""></video><span class="msg-time">09:50</span></div>
+      </div>
+      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
+        <ul class="dropdown-menu p-2"><li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li></ul></div>
+    </div>
+
+    <div class="msg mine">
+      <div class="bubble-wrap"><div class="bubble"><img class="msg-media js-lightbox" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%236c4cf1'/><stop offset='1' stop-color='%23ff5fa2'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>" alt="Photo"><span class="msg-time">09:52 <i class="bi bi-check2-all ticks"></i></span></div></div>
+      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
+        <ul class="dropdown-menu p-2">
+          <li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li>
+          <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
+        </ul></div>
+    </div>
+
+    <div class="msg mine">
+      <div class="bubble-wrap"><div class="bubble deleted"><i class="bi bi-slash-circle"></i> This message was deleted<span class="msg-time">09:53</span></div></div>
+    </div>
+
+    <div class="msg mine">
+      <div class="bubble-wrap"><div class="bubble"><div class="msg-text">Thanks everyone, great work!</div><span class="msg-time">09:58 <i class="bi bi-check2-all ticks seen"></i></span></div></div>
+      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
+        <ul class="dropdown-menu p-2">
+          <li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li>
+          <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
+        </ul></div>
+    </div>
+    <!-- Under your latest message -->
+    <div class="seen-line">
+      <span class="direct-only">Seen 10:02</span>
+      <span class="group-only"><span class="seen-avatars"><span class="av" style="--h:200">O</span><span class="av" style="--h:300">N</span><span class="av" style="--h:150">S</span></span> Seen by 3</span>
+    </div>
+
+    <!-- Typing indicator: remove d-none to show -->
+    <div class="msg d-none" id="typing"><span class="av av-sm group-only" style="--h:330">L</span><div class="typing"><span></span><span></span><span></span></div></div>
+  </div>
+
+  <button type="button" class="jump-latest d-none" id="jumpLatest" aria-label="Jump to latest message"><i class="bi bi-chevron-double-down"></i></button>
+
+  <form class="chat-compose" id="composeForm" method="post" action="" enctype="multipart/form-data">
+    <div class="attach-preview d-none" id="attachPreview">
+      <img class="d-none" alt="Selected photo"><video class="d-none" muted></video>
+      <span class="attach-name"></span>
+      <button type="button" class="attach-x" aria-label="Remove attachment"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="attach-error d-none" id="attachError" role="alert"></div>
+    <div class="compose-row">
+      <label class="compose-btn" title="Attach a photo or video"><i class="bi bi-paperclip"></i><input type="file" name="media" accept="image/*,video/*" hidden></label>
+      <textarea name="text" rows="1" maxlength="2000" placeholder="Write a message" aria-label="Message"></textarea>
+      <button class="compose-send" type="submit" aria-label="Send message" title="Send (Enter)" disabled><i class="bi bi-send-fill"></i></button>
+    </div>
+  </form>
+
+  <!-- BLOCKED: replace the form above with one of these
+  <div class="chat-notice"><span><i class="bi bi-slash-circle"></i> You blocked this user.</span><form method="post" action=""><button class="btn btn-soft btn-sm">Unblock</button></form></div>
+  <div class="chat-notice"><span><i class="bi bi-slash-circle"></i> You can't reply to this conversation.</span></div>
+  -->
+</div>
+</div></div></main>
+
+<div id="lightbox" class="lightbox d-none" role="dialog" aria-label="Photo"><img alt=""><button type="button" class="lightbox-x" aria-label="Close">&times;</button></div>
+{% endblock body %}

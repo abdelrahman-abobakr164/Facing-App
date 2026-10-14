@@ -67,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = "project.asgi.application"
+WSGI_APPLICATION = "project.asgi.application"
 WSGI_APPLICATION = "project.wsgi.application"
 
 CHANNEL_LAYERS = {

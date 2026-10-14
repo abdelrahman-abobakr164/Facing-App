@@ -15,7 +15,8 @@
         <div class="tab-pane fade show active" id="followers">
           <div class="card">
             <div class="card-body">
-              <form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search followers" name='u' aria-label="Search followers"></form>
+              {% if followers %} <form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search followers" id='searchfollowers' aria-label="Search followers"></form>{% endif %}
+              <div id="followerslist">
               {% for i in followers %}
                 <div class="person removable">
                 <span class="av" id="avatarPrev"
@@ -59,13 +60,15 @@
                 {% empty %}
                   <h5 class='ms-2 mt-3'>Nothing Found.</h5>
               {% endfor %}
+              </div>
             </div>
           </div>
         </div>
         <div class="tab-pane fade" id="following">
           <div class="card">
             <div class="card-body">
-              <form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search following" name='u' aria-label="Search following"></form>
+              {% if following %}<form action="{% url 'search' %}"><input class="form-control mb-2" placeholder="Search following" id='followingsearch' aria-label="Search following"></form>{% endif %}
+              <div id="followinglist">
               {% for i in following %}
                 <div class="person removable">
                 <span class="av" id="avatarPrev"
@@ -108,6 +111,7 @@
                 {% empty %}
                 <h5 class='ms-2 mt-3'>Nothing Found.</h5>
               {% endfor %}
+              </div>
             </div>
           </div>
         </div>
@@ -115,4 +119,14 @@
     </div>
   </div>
 </main>
+<script>
+  document.getElementById('followingsearch')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#followinglist .person').forEach(p => p.classList.toggle('d-none', !p.textContent.toLowerCase().includes(q)));
+  });
+  document.getElementById('searchfollowers')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#followerslist .person').forEach(p => p.classList.toggle('d-none', !p.textContent.toLowerCase().includes(q)));
+  });
+</script>
 {% endblock body %}

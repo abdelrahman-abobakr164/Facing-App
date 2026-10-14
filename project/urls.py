@@ -8,6 +8,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("accounts/", include("accounts.urls")),
     path("stories/", include("stories.urls")),
+    path("messages/", include("message.urls")),
     path("", include("posts.urls")),
 ]
 
