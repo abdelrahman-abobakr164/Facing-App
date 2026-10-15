@@ -1,37 +1,53 @@
 {% extends 'base.html' %}
-{% block title %}Chat{% endblock title %}
+{% block title %}
+{{name.username}}
+{% endblock title %}
+
 {% block body %}
 <main class="container py-3"><div class="row justify-content-center"><div class="col-lg-7">
-
-<!-- This sample is a GROUP chat. For a direct chat remove "is-group": .group-only hides and .direct-only shows. -->
-<div class="card chat-room is-group" data-lobby-url="">
+<div class="card chat-room {% if conversation.is_group %} is-group {% endif %}" data-lobby-url="">
 
   <header class="chat-head">
-    <a class="chat-back" href="#" aria-label="Back to conversations"><i class="bi bi-arrow-left"></i></a>
-
-    <!-- Group: participant photos -->
-    <a class="avatar-stack group-only" href="#" aria-label="Group members">
-      <span class="av" style="--h:330">L</span><span class="av" style="--h:200">O</span><span class="av" style="--h:300">N</span><span class="av more">+9</span>
-    </a>
-    <!-- Direct: one photo with online dot -->
-    <span class="av-wrap direct-only"><span class="av av-sm" style="--h:330">L</span><span class="online-dot" title="Online"></span></span>
+    <a class="chat-back" href="{% url 'lobby' %}" aria-label="Back to conversations"><i class="bi bi-arrow-left"></i></a>
+    
+    {% if conversation.is_group %}
+      <a class="avatar-stack group-only" aria-label="Group members">
+        {% for member in conversation.participants.all|slice:'3' %}
+        <span class="av av-sm" style="{% if member.img %}background-image:url('{{ member.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{member.color}}{% endif %}">{% if not member.img %}{{ member.username|first|upper }}{% endif %}</span>
+        {% endfor %}
+        {% if conversation.participants.count > 3 %}
+        <span class="av-more">+{{conversation.participants.count|add:"-3"}}</span>
+        {% endif %}
+      </a>
+    {% else %}
+      <span class="av-wrap direct-only">
+          <span class="av av-sm" style="{% if name.img %}background-image:url('{{ name.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{name.color}}{% endif %}">{% if not name.img %}{{ name.username|first|upper }}{% endif %}</span>
+      </span>
+    {% endif %}
 
     <div class="flex-grow-1" style="min-width:0">
-      <a class="name d-block text-truncate" href="#"><span class="group-only">Design Team</span><span class="direct-only">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></span></a>
-      <small class="muted group-only">12 members</small>
-      <small class="muted direct-only"><span class="status-dot"></span> Online</small>
+      <a {% if conversation.is_group == False %} href="{% url 'profile' name.id %}" {% endif %} class="name d-block text-truncate">
+        {% if conversation.is_group %}
+        <span class="group-only">{{name}}</span>
+        {% else %}
+        <span class="direct-only">{{name.username}} {% if name.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</span>
+        {% endif %}
+      </a>
+      {% if conversation.is_group %}<small class="muted group-only">{{conversation.participants.count}} members</small>{% endif %}
+      {% comment %} <small class="muted direct-only"><span class="status-dot"></span> Online</small> {% endcomment %}
     </div>
 
-    <div class="dropdown">
-      <button class="action" data-bs-toggle="dropdown" aria-label="Chat options"><i class="bi bi-three-dots-vertical"></i></button>
-      <ul class="dropdown-menu dropdown-menu-end p-2">
-        <li class="direct-only"><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>View profile</a></li>
-        <li class="direct-only"><form method="post" action="" onsubmit="return confirm('Block this user? They will not be able to message you.')"><button class="dropdown-item text-danger"><i class="bi bi-slash-circle me-2"></i>Block user</button></form></li>
-        <!-- Already blocked: <li class="direct-only"><button class="dropdown-item"><i class="bi bi-unlock me-2"></i>Unblock</button></li> -->
-        <li class="group-only"><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Edit group</a></li>
-        <li class="group-only"><form method="post" action="" onsubmit="return confirm('Leave this group?')"><button class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Leave group</button></form></li>
-      </ul>
-    </div>
+    {% if conversation.is_group %}
+      <div class="dropdown">
+        <button class="action" data-bs-toggle="dropdown" aria-label="Chat options"><i class="bi bi-three-dots-vertical"></i></button>
+        <ul class="dropdown-menu dropdown-menu-end p-2">
+          {% if request.user in conversation.admin.all %}
+            <li class="group-only"><a class="dropdown-item" href="{% url 'group_edit' conversation.id %}"><i class="bi bi-gear me-2"></i>Edit group</a></li>
+          {% endif %}
+          <li class="group-only"><form method="post" action="{% url 'leave' conversation.id %}">{% csrf_token %}<button class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Leave group</button></form></li>
+        </ul>
+      </div>
+    {% endif %}
   </header>
 
   <!-- Seen marks on messages you sent:
@@ -47,8 +63,6 @@
         <a class="msg-sender group-only" href="#">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a>
         <div class="bubble"><div class="msg-text">Morning team! The new onboarding designs are ready.</div><span class="msg-time">09:41</span></div>
       </div>
-      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
-        <ul class="dropdown-menu p-2"><li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li></ul></div>
     </div>
 
     <div class="msg">
@@ -57,15 +71,12 @@
         <a class="msg-sender group-only" href="#">Omar Khaled</a>
         <div class="bubble"><img class="msg-media js-lightbox" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%23f7b267'/><stop offset='1' stop-color='%23f4845f'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>" alt="Photo"><div class="msg-text">Version two of the home screen</div><span class="msg-time">09:43</span></div>
       </div>
-      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
-        <ul class="dropdown-menu p-2"><li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li></ul></div>
     </div>
 
     <div class="msg mine">
       <div class="bubble-wrap"><div class="bubble"><div class="msg-text">Looks great, shipping today!</div><span class="msg-time">09:45 <i class="bi bi-check2-all ticks seen"></i></span></div></div>
       <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
         <ul class="dropdown-menu p-2">
-          <li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li>
           <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
         </ul></div>
     </div>
@@ -76,31 +87,17 @@
         <a class="msg-sender group-only" href="#">Nour Ali</a>
         <div class="bubble"><video class="msg-media" controls preload="metadata" playsinline poster="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%236c4cf1'/><stop offset='1' stop-color='%23ff5fa2'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>"><source src=""></video><span class="msg-time">09:50</span></div>
       </div>
-      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
-        <ul class="dropdown-menu p-2"><li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li></ul></div>
     </div>
 
     <div class="msg mine">
       <div class="bubble-wrap"><div class="bubble"><img class="msg-media js-lightbox" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%236c4cf1'/><stop offset='1' stop-color='%23ff5fa2'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>" alt="Photo"><span class="msg-time">09:52 <i class="bi bi-check2-all ticks"></i></span></div></div>
       <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
         <ul class="dropdown-menu p-2">
-          <li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li>
           <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
         </ul></div>
     </div>
 
-    <div class="msg mine">
-      <div class="bubble-wrap"><div class="bubble deleted"><i class="bi bi-slash-circle"></i> This message was deleted<span class="msg-time">09:53</span></div></div>
-    </div>
 
-    <div class="msg mine">
-      <div class="bubble-wrap"><div class="bubble"><div class="msg-text">Thanks everyone, great work!</div><span class="msg-time">09:58 <i class="bi bi-check2-all ticks seen"></i></span></div></div>
-      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
-        <ul class="dropdown-menu p-2">
-          <li><form method="post" action="" onsubmit="return confirm('Delete this message for you?')"><button class="dropdown-item"><i class="bi bi-trash me-2"></i>Delete for me</button></form></li>
-          <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
-        </ul></div>
-    </div>
     <!-- Under your latest message -->
     <div class="seen-line">
       <span class="direct-only">Seen 10:02</span>

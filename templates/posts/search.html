@@ -11,7 +11,7 @@
           <div class="card">
             <div class="card-body">
               {% if get_users %}
-                <form ><input class="form-control mb-2" placeholder="Search users" id='search' aria-label="Search"></form>
+                <form ><input class="form-control mb-2" placeholder="Search users" id='search' name='u' aria-label="Search"></form>
                 <div id="users">
                   {% for i in get_users %}
                     <div class="person removable">

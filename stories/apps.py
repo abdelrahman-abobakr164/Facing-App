@@ -2,4 +2,7 @@ from django.apps import AppConfig
 
 
 class StoriesConfig(AppConfig):
-    name = 'stories'
+    name = "stories"
+
+    def ready(self):
+        import stories.signals

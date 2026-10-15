@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from collections import defaultdict
 from django.db.models import Q
 
 from .models import Follow
@@ -6,63 +7,50 @@ from .models import Follow
 User = get_user_model()
 
 
-def mutuals_count(request, friends_requests):
-    mutual_follow = Follow.objects.filter(
-        Q(follower=request.user, status=Follow.Status.ACCEPTED)
-        | Q(following=request.user, status=Follow.Status.ACCEPTED)
+def _friend_map(user_ids):
+    friends = defaultdict(set)
+    pairs = (
+        Follow.objects.filter(status=Follow.Status.ACCEPTED)
+        .filter(Q(follower_id__in=user_ids) | Q(following_id__in=user_ids))
+        .values_list("follower_id", "following_id")
     )
+    for follower_id, following_id in pairs:
+        if follower_id in user_ids:
+            friends[follower_id].add(following_id)
+        if following_id in user_ids:
+            friends[following_id].add(follower_id)
+    return friends
 
-    mutual_list = set()
-    for f in friends_requests:
-        for i in mutual_follow:
-            if i.follower_id != request.user.id and i.follower_id != f.follower_id:
-                mutual_list.add(i.follower_id)
-            if i.following_id != request.user.id and i.follower_id != f.following_id:
-                mutual_list.add(i.following_id)
 
-    return User.objects.filter(id__in=mutual_list)
+def mutuals_count(request, friends_requests):
+    me = request.user.id
+    requester_ids = {f.follower_id for f in friends_requests}
+
+    friends = _friend_map(requester_ids | {me})
+    my_friends = friends[me]
+
+    return {rid: len(friends[rid] & my_friends) for rid in requester_ids}
 
 
 def people_you_may_know(user):
-    follow_set = set()
-    mutual_list = set()
+    following_ids = set(user.following.values_list("following_id", flat=True))
+    follower_ids = set(user.followers.values_list("follower_id", flat=True))
 
-    UIfollowing = user.following.values_list("following_id", flat=True)
-    Mfollowers = user.followers.values_list("follower_id", flat=True)
+    direct_network = following_ids | follower_ids
 
-    for i in UIfollowing:
-        follow_set.add(i)
-    for i in Mfollowers:
-        follow_set.add(i)
-
-    mutual_followers = (
-        Follow.objects.filter(
-            Q(following__in=Mfollowers, status=Follow.Status.ACCEPTED)
-            | Q(follower__in=Mfollowers, status=Follow.Status.ACCEPTED)
-        )
-        .exclude(follower=user)
-        .exclude(following=user)
+    related_follows = (
+        Follow.objects.filter(status=Follow.Status.ACCEPTED)
+        .filter(Q(following_id__in=direct_network) | Q(follower_id__in=direct_network))
+        .exclude(Q(follower_id=user.id) | Q(following_id=user.id))
+        .values_list("follower_id", "following_id")
     )
 
-    mutual_following = (
-        Follow.objects.filter(
-            Q(follower__in=UIfollowing, status=Follow.Status.ACCEPTED)
-            | Q(following__in=UIfollowing, status=Follow.Status.ACCEPTED)
-        )
-        .exclude(follower=user)
-        .exclude(following=user)
-    )
+    MutualList = set()
 
-    for i in mutual_followers:
-        if i.follower.id not in follow_set:
-            mutual_list.add(i.follower.id)
-        if i.following.id not in follow_set:
-            mutual_list.add(i.following.id)
+    for follower_id, following_id in related_follows:
+        if follower_id not in direct_network:
+            MutualList.add(follower_id)
+        if following_id not in direct_network:
+            MutualList.add(following_id)
 
-    for i in mutual_following:
-        if i.follower.id not in follow_set:
-            mutual_list.add(i.follower.id)
-        if i.following.id not in follow_set:
-            mutual_list.add(i.following.id)
-
-    return User.objects.filter(id__in=mutual_list)
+    return User.objects.filter(id__in=MutualList)

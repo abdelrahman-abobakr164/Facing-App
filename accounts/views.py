@@ -232,6 +232,9 @@ def requests(request):
     ).select_related("following")
 
     mutual_friends = mutuals_count(request, friends_requests)
+    for f in friends_requests:
+        f.mutual_count = mutual_friends[f.follower_id]
+        
     related_people = people_you_may_know(request.user)
 
     context = {

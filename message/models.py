@@ -12,7 +12,7 @@ class Conversation(models.Model):
     admin = models.ManyToManyField(User, related_name="conversation_admin")
     is_group = models.BooleanField(default=False)
     group_name = models.CharField(max_length=100, null=True, blank=True, unique=True)
-    group_image = models.ImageField(upload_to="group_images/", null=True, blank=True)
+    group_image = models.ImageField(upload_to="group_images/")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

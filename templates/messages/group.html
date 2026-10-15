@@ -1,110 +1,114 @@
 {% extends 'base.html' %}
-{% block title %}Edit group{% endblock title %}
+{% block title %}{% if conv %} Edit {% else %} Create {% endif %} group{% endblock title %}
 {% block body %}
-<main class="container py-4"><div class="row justify-content-center"><div class="col-lg-6">
-  <a class="small muted" href="#"><i class="bi bi-arrow-left"></i> Back</a>
-  <h4 class="my-3">Edit group</h4><!-- CREATE mode: "New group" -->
+<main class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <a class="small muted" href="{% url 'lobby' %}"><i class="bi bi-arrow-left"></i> Back</a>
+      <h4 class="my-3">{% if conv %} Edit {% else %} Create {% endif %} group</h4>
 
-  <!-- One form for creating and editing: photo, name, about, and people to add -->
-  <form class="card mb-3 overflow-hidden" method="post" action="" enctype="multipart/form-data">
-    <div class="group-banner"></div>
-    <div class="card-body pt-0 px-4 pb-4">
-      <label class="avatar-edit" title="Change group photo">
-        <span class="av av-xl" id="groupAvatar" style="--h:200"><i class="bi bi-people-fill"></i></span>
-        <span class="avatar-cam"><i class="bi bi-camera-fill"></i></span>
-        <input type="file" name="img" accept="image/*" hidden data-preview="#groupAvatar">
-      </label>
-      <!-- Photo error: <div class="text-danger small mb-2">Error text</div> -->
+      <form class="card mb-3 " method="post"  enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="next" value='{{request.get_full_path}}'>
+        <div class="group-banner"></div>
+        <div class="card-body  p-4">
+          <label class="avatar-edit" title="Change group photo">
+            <span class="av av-xl" id="groupAvatar"
+              {% if conv %}style="background-image:url('{{ conv.group_image.url }}');background-size:cover;background-position:center;"{% endif %}>
+              {% if not conv %}<i class="bi bi-people-fill"></i>{% endif %}
+            </span>
+            </span>
+            <span class="avatar-cam"><i class="bi bi-camera-fill"></i></span>
+            <input type="file" required  name="group_image" accept="image/*" hidden data-preview="#groupAvatar">
+          </label>
 
-      <div class="mb-3">
-        <div class="d-flex justify-content-between"><label class="form-label" for="groupName">Group name</label><small class="muted" id="nameCount"></small></div>
-        <input id="groupName" name="name" class="form-control" maxlength="60" value="Design Team" required data-counter="#nameCount">
-        <!-- Name error: add is-invalid to the input, then <div class="invalid-feedback">Error text</div> -->
-      </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between"><label class="form-label" for="groupName">Group name</label><small class="muted" id="nameCount"></small></div>
+            <input id="groupName" name="group_name"  value='{{conv.group_name}}' class="form-control" maxlength="60" value="{{conv.group_name}}" required data-counter="#nameCount">
+            <!-- Name error: add is-invalid to the input, then <div class="invalid-feedback">Error text</div> -->
+          </div>
 
-      <div class="mb-4">
-        <div class="d-flex justify-content-between"><label class="form-label" for="groupAbout">About <span class="muted fw-normal">(optional)</span></label><small class="muted" id="aboutCount"></small></div>
-        <textarea id="groupAbout" name="about" class="form-control" rows="2" maxlength="200" placeholder="What is this group for?" data-counter="#aboutCount"></textarea>
-      </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label mb-0">Add people</label><small class="muted"><span id="selCount">0</span> selected</small>
+          </div>
+          <div class="sel-chips" id="selectedChips"></div>
+          <div class="search-box mb-2">
+            <i class="bi bi-search"></i>
+            <input type="search" placeholder="Search people to add" aria-label="Search people to add" data-live-search="#candidates" autocomplete="off">
+            <button type="button" class="search-clear d-none" aria-label="Clear search"><i class="bi bi-x-circle-fill"></i></button>
+          </div>
+          <div class="pick-list" id="candidates">
+          {% for i in users %}
+          <label class="person pick" data-item>
+            <input class="form-check-input" type="checkbox" name="participants" {% if i in conv.participants.all %} checked {% endif %} value="{{i.id}}">
+            <span class="av av-sm"
+              style="{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.color}}{% endif %}">
+              {% if not i.img %}{{ i.username|first|upper }}{% endif %}
+            </span> 
+            <span class="name flex-grow-1">{{i.username}}</span>
+          </label>
+          {% endfor %}
+            <div class="list-empty d-none" data-empty><i class="bi bi-search"></i><p class="mb-0">No one found</p></div>
+          </div>
 
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <label class="form-label mb-0">Add people</label><small class="muted"><span id="selCount">0</span> selected</small>
-      </div>
-      <div class="sel-chips" id="selectedChips"></div>
-      <div class="search-box mb-2">
-        <i class="bi bi-search"></i>
-        <input type="search" placeholder="Search people to add" aria-label="Search people to add" data-live-search="#candidates" autocomplete="off">
-        <button type="button" class="search-clear d-none" aria-label="Clear search"><i class="bi bi-x-circle-fill"></i></button>
-      </div>
-      <div class="pick-list" id="candidates">
-      <label class="person pick" data-item><input class="form-check-input" type="checkbox" name="members" value=""><span class="av av-sm" style="--h:330">L</span><span class="name flex-grow-1">Lina Hassan</span></label>
-      <label class="person pick" data-item><input class="form-check-input" type="checkbox" name="members" value=""><span class="av av-sm" style="--h:150">S</span><span class="name flex-grow-1">Sara Nabil</span></label>
-      <label class="person pick" data-item><input class="form-check-input" type="checkbox" name="members" value=""><span class="av av-sm" style="--h:20">K</span><span class="name flex-grow-1">Karim Adel</span></label>
-      <label class="person pick" data-item><input class="form-check-input" type="checkbox" name="members" value=""><span class="av av-sm" style="--h:60">D</span><span class="name flex-grow-1">Dina Magdy</span></label>
-        <div class="list-empty d-none" data-empty><i class="bi bi-search"></i><p class="mb-0">No one found</p></div>
-        <!-- Nobody left to add: <p class="muted text-center my-3">Everyone you follow is already here.</p> -->
-      </div>
-      <button class="btn btn-brand px-4 mt-3">Save changes</button><!-- CREATE mode: "Create group" -->
-    </div>
-  </form>
+          
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label mb-0">Add admins</label>
+          </div>
+          <div class="search-box mb-1">
+            <i class="bi bi-search"></i>
+            <input type="search" placeholder="Search Admins to Add" aria-label="Search admins" data-live-search="#members" autocomplete="off">
+            <button type="button" class="search-clear d-none" aria-label="Clear search"><i class="bi bi-x-circle-fill"></i></button>
+          </div>
+          <div id="members">
+            {% if conv %}
+              {% for i in conv.participants.all %}
+                {% if i not in conv.admin.all %}
+                  <label class="person pick" data-item>
+                    <input class="form-check-input" type="checkbox" name="admin" value="{{i.id}}">
+                    <span class="av av-sm"
+                      style="{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.color}}{% endif %}">
+                      {% if not i.img %}{{ i.username|first|upper }}{% endif %}
+                    </span> 
+                    <span class="name flex-grow-1">{{i.username}}</span>
+                  </label>
+                {% else %}
+                  <div class="person" data-item>
+                      <span class="av"
+                      style="{% if i.img %}background-image:url('{{ i.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{i.color}}{% endif %}">
+                      {% if not i.img %}{{ i.username|first|upper }}{% endif %}
+                      </span> 
+                    <div class="flex-grow-1"><a class="name" href="{% url 'profile' i.id %}">{{i.username}} <span class="muted fw-normal">{% if i == request.user %}(you){% endif %}</span></a><small class="d-block">{% if i in conv.admin.all %}<span class="role-chip"><i class="bi bi-shield-fill-check"></i> Admin </span>{% endif %} </small></div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+              {% else %}
+                <div class="person" data-item>
+                  <input type='hidden' name="admin" value="{{user.id}}">
+                  <span class="av"
+                    style="{% if user.img %}background-image:url('{{ user.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{user.color}}{% endif %}">
+                    {% if not user.img %}{{ user.username|first|upper }}{% endif %}
+                  </span> 
+                  <div class="flex-grow-1"><a class="name" href="{% url 'profile' user.id %}">{{user.username}} <span class="muted fw-normal">(you)</span></a><small class="d-block"><span class="role-chip"><i class="bi bi-shield-fill-check"></i> Admin </span> </small></div>
+                </div>
+            {% endif %}
 
-  <!-- EDIT MODE ONLY: everything below -->
-  <div class="card mb-3"><div class="card-body p-4">
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <h6 class="mb-0">Participants <span class="pill-count">4</span></h6>
-    </div>
-    <div class="search-box mb-1">
-      <i class="bi bi-search"></i>
-      <input type="search" placeholder="Search participants" aria-label="Search participants" data-live-search="#members" autocomplete="off">
-      <button type="button" class="search-clear d-none" aria-label="Clear search"><i class="bi bi-x-circle-fill"></i></button>
-    </div>
-    <div id="members">
-    <div class="person" data-item>
-      <a href="#"><span class="av" style="--h:260">a</span></a>
-      <div class="flex-grow-1"><a class="name" href="#">alexm <span class="muted fw-normal">(you)</span></a><small class="d-block"><span class="role-chip"><i class="bi bi-shield-fill-check"></i> Admin</span></small></div>
-    </div>
-    <div class="person" data-item>
-      <a href="#"><span class="av" style="--h:200">O</span></a>
-      <div class="flex-grow-1"><a class="name" href="#">Omar Khaled</a><small class="d-block"><span class="role-chip"><i class="bi bi-shield-fill-check"></i> Admin</span></small></div>
-      <div class="dropdown">
-        <button class="action" data-bs-toggle="dropdown" aria-label="Member options"><i class="bi bi-three-dots"></i></button>
-        <ul class="dropdown-menu dropdown-menu-end p-2">
-          <li><form method="post" action=""><button class="dropdown-item"><i class="bi bi-shield-check me-2"></i>Remove as admin</button></form></li>
-          <li><form method="post" action="" onsubmit="return confirm('Remove this member from the group?')"><button class="dropdown-item text-danger"><i class="bi bi-person-dash me-2"></i>Remove from group</button></form></li>
-        </ul>
-      </div>
-    </div>
-    <div class="person" data-item>
-      <a href="#"><span class="av" style="--h:300">N</span></a>
-      <div class="flex-grow-1"><a class="name" href="#">Nour Ali</a></div>
-      <div class="dropdown">
-        <button class="action" data-bs-toggle="dropdown" aria-label="Member options"><i class="bi bi-three-dots"></i></button>
-        <ul class="dropdown-menu dropdown-menu-end p-2">
-          <li><form method="post" action=""><button class="dropdown-item"><i class="bi bi-shield-check me-2"></i>Make admin</button></form></li>
-          <li><form method="post" action="" onsubmit="return confirm('Remove this member from the group?')"><button class="dropdown-item text-danger"><i class="bi bi-person-dash me-2"></i>Remove from group</button></form></li>
-        </ul>
-      </div>
-    </div>
-    <div class="person" data-item>
-      <a href="#"><span class="av" style="--h:100">Y</span></a>
-      <div class="flex-grow-1"><a class="name" href="#">Yara Fathy</a></div>
-      <div class="dropdown">
-        <button class="action" data-bs-toggle="dropdown" aria-label="Member options"><i class="bi bi-three-dots"></i></button>
-        <ul class="dropdown-menu dropdown-menu-end p-2">
-          <li><form method="post" action=""><button class="dropdown-item"><i class="bi bi-shield-check me-2"></i>Make admin</button></form></li>
-          <li><form method="post" action="" onsubmit="return confirm('Remove this member from the group?')"><button class="dropdown-item text-danger"><i class="bi bi-person-dash me-2"></i>Remove from group</button></form></li>
-        </ul>
-      </div>
-    </div>
-      <div class="list-empty d-none" data-empty><i class="bi bi-search"></i><p class="mb-0">No participants found</p></div>
-    </div>
-    <!-- Admin actions menu: hide it for non-admins and for yourself -->
-  </div></div>
+            <button class="btn btn-brand px-4 mt-3">Save changes</button>
 
-  <div class="card"><div class="card-body p-4 d-flex flex-wrap gap-2">
-    <form method="post" action="" onsubmit="return confirm('Leave this group?')"><button class="btn btn-soft text-danger"><i class="bi bi-box-arrow-right"></i> Leave group</button></form>
-    <!-- Admins only -->
-    <form method="post" action="" onsubmit="return confirm('Delete this group and all its messages? This cannot be undone.')"><button class="btn btn-soft text-danger"><i class="bi bi-trash3"></i> Delete group</button></form>
-  </div></div>
-</div></div></main>
+            <div class="list-empty d-none" data-empty><i class="bi bi-search"></i><p class="mb-0">No participants found</p></div>
+        </div>
+      </div>
+      </form>
+      
+      {% if conv and request.user in conv.admin.all %}
+        <div class="card"><div class="card-body p-4 d-flex flex-wrap gap-2">
+          <form method="post" action="{% url 'leave' conv.id %}" onsubmit="return confirm('Leave this group?')"><button class="btn btn-soft text-danger"><i class="bi bi-box-arrow-right"></i> Leave group</button></form>
+          <form method="post" action="{% url 'delete-group' conv.id %}" onsubmit="return confirm('Delete this group and all its messages? This cannot be undone.')"><button class="btn btn-soft text-danger"><i class="bi bi-trash3"></i> Delete group</button></form>
+        </div>
+      {% endif %}
+
+      </div>
+    </div>
+  </div>
+</main>
 {% endblock body %}

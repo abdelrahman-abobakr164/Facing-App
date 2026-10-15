@@ -20,8 +20,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # "daphne",
-    # "channels",
+    "daphne",
+    "channels",
     "accounts",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -62,12 +63,13 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "message.context_processors.nav_counters",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "project.asgi.application"
+ASGI_APPLICATION = "project.asgi.application"
 WSGI_APPLICATION = "project.wsgi.application"
 
 CHANNEL_LAYERS = {
@@ -194,3 +196,26 @@ EMAIL_HOST_USER = "abdelrahmanforlearn@gmail.com"
 EMAIL_HOST_PASSWORD = "khsymyvhmdnltjet"
 DEFAULT_FROM_EMAIL = "abdelrahmanforlearn@gmail.com"
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
+
+CELERY_BROKER_URL = "redis://default:YiizmCxmjfncVO1LFpmpYQPerw7iDmag@redis-17105.c44.us-east-1-2.ec2.cloud.redislabs.com:17105"
+CELERY_RESULT_BACKEND = "redis://default:YiizmCxmjfncVO1LFpmpYQPerw7iDmag@redis-17105.c44.us-east-1-2.ec2.cloud.redislabs.com:17105"
+
+CELERY_TASK_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Africa/Cairo"
+
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
+
+
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
+
+CELERY_TASK_IGNORE_RESULT = False
+
+CELERY_ENABLE_UTC = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
