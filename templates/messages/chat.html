@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}
-{{name.username}}
+{% if not conversation.is_group %}
+  {{name.username}}
+  {% else %}
+  {{name}}
+  {% endif %}
 {% endblock title %}
 
 {% block body %}
@@ -11,14 +15,7 @@
     <a class="chat-back" href="{% url 'lobby' %}" aria-label="Back to conversations"><i class="bi bi-arrow-left"></i></a>
     
     {% if conversation.is_group %}
-      <a class="avatar-stack group-only" aria-label="Group members">
-        {% for member in conversation.participants.all|slice:'3' %}
-        <span class="av av-sm" style="{% if member.img %}background-image:url('{{ member.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{member.color}}{% endif %}">{% if not member.img %}{{ member.username|first|upper }}{% endif %}</span>
-        {% endfor %}
-        {% if conversation.participants.count > 3 %}
-        <span class="av-more">+{{conversation.participants.count|add:"-3"}}</span>
-        {% endif %}
-      </a>
+      <span class="av av-s" style="background-image:url('{{ conversation.group_image.url }}');background-size:cover;background-position:center;"></span>
     {% else %}
       <span class="av-wrap direct-only">
           <span class="av av-sm" style="{% if name.img %}background-image:url('{{ name.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{name.color}}{% endif %}">{% if not name.img %}{{ name.username|first|upper }}{% endif %}</span>
@@ -34,7 +31,6 @@
         {% endif %}
       </a>
       {% if conversation.is_group %}<small class="muted group-only">{{conversation.participants.count}} members</small>{% endif %}
-      {% comment %} <small class="muted direct-only"><span class="status-dot"></span> Online</small> {% endcomment %}
     </div>
 
     {% if conversation.is_group %}
@@ -50,59 +46,53 @@
     {% endif %}
   </header>
 
-  <!-- Seen marks on messages you sent:
-       sent       <i class="bi bi-check2 ticks"></i>
-       delivered  <i class="bi bi-check2-all ticks"></i>
-       seen       <i class="bi bi-check2-all ticks seen"></i> -->
   <div class="chat-messages" id="chatMessages">
-    <div class="day-sep"><span>October 12, 2026</span></div>
-
-    <div class="msg">
-      <a class="group-only" href="#"><span class="av av-sm" style="--h:330">L</span></a>
+    {% for msg in msgs %}
+    <div class="msg {% if msg.sender == request.user %} mine {% endif %} ">
+      <a class="group-only" href="{% url 'profile' msg.sender.id %}">
+        <span class="av av-sm" style="{% if msg.sender.img %}background-image:url('{{ msg.sender.img.url }}');background-size:cover;background-position:center;{% else %}--h:{{msg.sender.color}}{% endif %}">{% if not msg.sender.img %}{{ msg.sender.username|first|upper }}{% endif %}</span>
+      </a>
       <div class="bubble-wrap">
-        <a class="msg-sender group-only" href="#">Lina Hassan <i class="bi bi-patch-check-fill verified" title="Verified"></i></a>
-        <div class="bubble"><div class="msg-text">Morning team! The new onboarding designs are ready.</div><span class="msg-time">09:41</span></div>
+        <a class="msg-sender group-only" href="{% url 'profile' msg.sender.id %}">{{msg.sender.username}} {% if msg.sender.verified %} <i class="bi bi-patch-check-fill verified" title="Verified"></i>{% endif %}</a>
+        <div class="bubble">
+          {% for att in msg.attachments.all %}
+            {% if att.file_type == 'image' %}
+              <img class="msg-media js-lightbox" src="{{att.file.url}}" alt="Photo">
+            {% elif att.file_type == 'video' %}
+              <video class="msg-media" controls preload="metadata" playsinline>
+                <source src="{{att.file.url}}">
+              </video>
+            {% elif att.file_type == "application" %}
+              <a href="{{ att.file.url }}" target="_blank" rel="noopener" class="attach-pdf-link">
+                <i class="bi bi-file-earmark-pdf"></i>
+                {{ att.file_name|slice:"-30:" }}
+              </a>
+            {% endif %}
+          {% endfor %}
+          
+          {% if msg.content %}
+          <div class="msg-text">{{msg.content}}</div>
+          {% endif %}
+          <span class="msg-time">{{msg.timestamp|time:"g:i A"}} {% if msg.sender == request.user %} {% if msg.read %} <i class="bi bi-check2-all ticks seen"></i> {% else %}<i class="bi bi-check2-all ticks"></i>{% endif %}{% endif %}</span>
+        </div>
       </div>
+      {% if msg.sender == request.user %}
+        <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
+          <ul class="dropdown-menu p-2">
+            <li><form method="post" action="{% url 'delete-chat' conversation.id msg.id %}" onsubmit="return confirm('are you sure you want to Delete this message ')">{% csrf_token %}<button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete</button></form></li>
+          </ul>
+        </div>
+      {% endif %}
     </div>
-
-    <div class="msg">
-      <a class="group-only" href="#"><span class="av av-sm" style="--h:200">O</span></a>
-      <div class="bubble-wrap">
-        <a class="msg-sender group-only" href="#">Omar Khaled</a>
-        <div class="bubble"><img class="msg-media js-lightbox" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%23f7b267'/><stop offset='1' stop-color='%23f4845f'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>" alt="Photo"><div class="msg-text">Version two of the home screen</div><span class="msg-time">09:43</span></div>
-      </div>
-    </div>
-
-    <div class="msg mine">
-      <div class="bubble-wrap"><div class="bubble"><div class="msg-text">Looks great, shipping today!</div><span class="msg-time">09:45 <i class="bi bi-check2-all ticks seen"></i></span></div></div>
-      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
-        <ul class="dropdown-menu p-2">
-          <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
-        </ul></div>
-    </div>
-
-    <div class="msg">
-      <a class="group-only" href="#"><span class="av av-sm" style="--h:300">N</span></a>
-      <div class="bubble-wrap">
-        <a class="msg-sender group-only" href="#">Nour Ali</a>
-        <div class="bubble"><video class="msg-media" controls preload="metadata" playsinline poster="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%236c4cf1'/><stop offset='1' stop-color='%23ff5fa2'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>"><source src=""></video><span class="msg-time">09:50</span></div>
-      </div>
-    </div>
-
-    <div class="msg mine">
-      <div class="bubble-wrap"><div class="bubble"><img class="msg-media js-lightbox" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='240'><defs><linearGradient id='g' x2='1' y2='1'><stop offset='0' stop-color='%236c4cf1'/><stop offset='1' stop-color='%23ff5fa2'/></linearGradient></defs><rect width='320' height='240' fill='url(%23g)'/></svg>" alt="Photo"><span class="msg-time">09:52 <i class="bi bi-check2-all ticks"></i></span></div></div>
-      <div class="dropdown msg-menu"><button class="msg-more" data-bs-toggle="dropdown" aria-label="Message options"><i class="bi bi-three-dots-vertical"></i></button>
-        <ul class="dropdown-menu p-2">
-          <li><form method="post" action="" onsubmit="return confirm('Delete this message for everyone?')"><button class="dropdown-item text-danger"><i class="bi bi-trash3-fill me-2"></i>Delete for everyone</button></form></li>
-        </ul></div>
-    </div>
-
-
-    <!-- Under your latest message -->
-    <div class="seen-line">
-      <span class="direct-only">Seen 10:02</span>
-      <span class="group-only"><span class="seen-avatars"><span class="av" style="--h:200">O</span><span class="av" style="--h:300">N</span><span class="av" style="--h:150">S</span></span> Seen by 3</span>
-    </div>
+      {% if msg.sender == request.user %}
+        {% if msg.read %}
+          <div class="seen-line">
+            <span class="group-only">
+              <a href="{% url 'info' msg.id %}"><span class="seen-avatars"></span> Seen by {{msg.read_by.count}}</span></a>
+          </div>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
 
     <!-- Typing indicator: remove d-none to show -->
     <div class="msg d-none" id="typing"><span class="av av-sm group-only" style="--h:330">L</span><div class="typing"><span></span><span></span><span></span></div></div>
@@ -111,25 +101,32 @@
   <button type="button" class="jump-latest d-none" id="jumpLatest" aria-label="Jump to latest message"><i class="bi bi-chevron-double-down"></i></button>
 
   <form class="chat-compose" id="composeForm" method="post" action="" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="next" value='{{request.get_full_path}}'>
     <div class="attach-preview d-none" id="attachPreview">
       <img class="d-none" alt="Selected photo"><video class="d-none" muted></video>
+      
+      <iframe class="attach-pdf d-none" style="width:100%;height:200px;border:0;"></iframe>
+      {% comment %} <div class="attach-pdf d-none">
+        <i class="bi bi-file-earmark-pdf"></i>
+        <span>PDF document</span>
+      </div> {% endcomment %}
+
       <span class="attach-name"></span>
       <button type="button" class="attach-x" aria-label="Remove attachment"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="attach-error d-none" id="attachError" role="alert"></div>
     <div class="compose-row">
-      <label class="compose-btn" title="Attach a photo or video"><i class="bi bi-paperclip"></i><input type="file" name="media" accept="image/*,video/*" hidden></label>
-      <textarea name="text" rows="1" maxlength="2000" placeholder="Write a message" aria-label="Message"></textarea>
-      <button class="compose-send" type="submit" aria-label="Send message" title="Send (Enter)" disabled><i class="bi bi-send-fill"></i></button>
+      <label class="compose-btn" title="Attach a photo or video"><i class="bi bi-paperclip"></i><input type="file" name="file" accept="image/*,video/*,application/pdf,.pdf" hidden></label>
+      <textarea name="content" rows="1" maxlength="2000" placeholder="Write a message" aria-label="Message"></textarea>
+      <button class="compose-send" {% if btn %} disabled {% endif %} type="submit" aria-label="Send message" title="Send (Enter)" disabled><i class="bi bi-send-fill"></i></button>
     </div>
   </form>
-
-  <!-- BLOCKED: replace the form above with one of these
-  <div class="chat-notice"><span><i class="bi bi-slash-circle"></i> You blocked this user.</span><form method="post" action=""><button class="btn btn-soft btn-sm">Unblock</button></form></div>
-  <div class="chat-notice"><span><i class="bi bi-slash-circle"></i> You can't reply to this conversation.</span></div>
-  -->
+  
+  {% if btn %}
+    <div class="chat-notice"><span><i class="bi bi-slash-circle"></i> You can't reply to this conversation.</span></div>
+  {% endif %}
 </div>
 </div></div></main>
 
-<div id="lightbox" class="lightbox d-none" role="dialog" aria-label="Photo"><img alt=""><button type="button" class="lightbox-x" aria-label="Close">&times;</button></div>
 {% endblock body %}

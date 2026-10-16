@@ -33,8 +33,6 @@ background:linear-gradient(135deg,hsl(var(--h) 70% 55%),hsl(calc(var(--h) + 40) 
 .media.removed::after{content:"Will be removed";position:absolute;inset:0;display:grid;place-items:center;color:var(--ink);font-weight:700;background:rgba(0,0,0,.25);border-radius:14px}
 .preview{position:relative;margin-top:.75rem}.preview img,.preview video{width:100%;max-height:340px;object-fit:cover;border-radius:14px}
 .preview-x{position:absolute;top:8px;right:8px;width:32px;height:32px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;z-index:2}
-.bubble{max-width:72%;padding:.6rem .9rem;border-radius:18px 18px 18px 4px;background:var(--soft);margin-bottom:.5rem}
-.bubble.me{margin-left:auto;background:var(--grad);color:#fff;border-radius:18px 18px 4px 18px}
 .person{display:flex;align-items:center;gap:.9rem;padding:.8rem 0;border-bottom:1px solid var(--line)}.person:last-child{border:0}
 .req .av-lg{box-shadow:0 0 0 4px var(--soft)}
 .unread{background:var(--soft)}
@@ -136,3 +134,17 @@ background:linear-gradient(135deg,hsl(var(--h) 70% 55%),hsl(calc(var(--h) + 40) 
 .em-x{position:absolute;inset:0;display:grid;place-items:center;font-size:1.4rem;color:#fff;background:rgba(220,53,69,.55);opacity:0;transition:opacity .15s;pointer-events:none}
 .em-item input:checked ~ .em-x{opacity:1}
 .em-item input:checked ~ img,.em-item input:checked ~ video{opacity:.5}
+/* ===== Chat message bubbles ===== */
+.msg{display:flex;align-items:flex-end;gap:.5rem;max-width:82%}
+.msg.mine{align-self:flex-end;flex-direction:row-reverse}
+.bubble-wrap{min-width:0;max-width:100%}
+.chat-messages .bubble{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:flex-end;column-gap:.7rem;
+  width:fit-content;max-width:100%;min-width:76px;margin:0;padding:.5rem .85rem .4rem;
+  border-radius:4px 18px 18px 18px;background:var(--soft);font-size:.95rem;line-height:1.45;overflow-wrap:break-word}
+.msg.mine .bubble{background:var(--grad);color:#fff;border-radius:18px 4px 18px 18px}
+.chat-messages .bubble:has(.msg-media){width:min(320px,100%)}
+.bubble.deleted{display:block}
+.msg-text{flex:1 1 auto;min-width:0}
+.msg-media{flex:0 0 100%;display:block;width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin-bottom:.35rem;background:#000}
+.msg-time{flex:none;margin-left:auto;display:inline-flex;align-items:center;gap:.25rem;font-size:.68rem;line-height:1;white-space:nowrap;opacity:.7}
+.msg-time .ticks{margin:0;font-size:.95rem}

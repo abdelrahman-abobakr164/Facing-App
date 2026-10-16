@@ -9,7 +9,7 @@ User = get_user_model()
 class Conversation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     participants = models.ManyToManyField(User, related_name="conversations")
-    admin = models.ManyToManyField(User, related_name="conversation_admin")
+    admin = models.ManyToManyField(User, related_name="conversation_admin", blank=True)
     is_group = models.BooleanField(default=False)
     group_name = models.CharField(max_length=100, null=True, blank=True, unique=True)
     group_image = models.ImageField(upload_to="group_images/")

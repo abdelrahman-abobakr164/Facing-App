@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load my_filters  %}
 {% block title %}{% if conv %} Edit {% else %} Create {% endif %} group{% endblock title %}
 {% block body %}
 <main class="container py-4">
@@ -19,7 +20,7 @@
             </span>
             </span>
             <span class="avatar-cam"><i class="bi bi-camera-fill"></i></span>
-            <input type="file" required  name="group_image" accept="image/*" hidden data-preview="#groupAvatar">
+            <input type="file"  name="group_image" accept="image/*" hidden data-preview="#groupAvatar">
           </label>
 
           <div class="mb-3">
@@ -62,7 +63,7 @@
           </div>
           <div id="members">
             {% if conv %}
-              {% for i in conv.participants.all %}
+              {% for i in conv.participants.all|admins_first:conv.admin.all %}
                 {% if i not in conv.admin.all %}
                   <label class="person pick" data-item>
                     <input class="form-check-input" type="checkbox" name="admin" value="{{i.id}}">

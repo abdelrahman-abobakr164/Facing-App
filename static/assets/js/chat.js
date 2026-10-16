@@ -65,43 +65,71 @@
     jump.addEventListener('click', () => box.scrollTo({ top: box.scrollHeight }));
   }
 
-  const form = $('#composeForm');
-  if (form) {
-    const ta = $('textarea', form), file = $('input[type=file]', form), send = $('.compose-send', form);
-    const prev = $('#attachPreview'), err = $('#attachError'), MAX_MB = { image: 10, video: 50 };
-    const update = () => { send.disabled = !ta.value.trim() && !file.files.length; };
-    const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; };
-    const clear = () => { file.value = ''; prev.classList.add('d-none'); update(); };
-    ta.addEventListener('input', () => { grow(); update(); });
-    ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!send.disabled) form.requestSubmit(); } });
-    $('.attach-x', form).addEventListener('click', () => { clear(); err.classList.add('d-none'); });
-    file.addEventListener('change', () => {
-      const f = file.files[0]; if (!f) return clear();
-      const kind = f.type.startsWith('video/') ? 'video' : f.type.startsWith('image/') ? 'image' : null;
-      if (!kind || f.size > MAX_MB[kind] * 1048576) {
-        clear(); err.textContent = kind ? `${kind === 'video' ? 'Videos' : 'Photos'} can be up to ${MAX_MB[kind]} MB.` : 'Only photos and videos can be sent.';
-        return err.classList.remove('d-none');
-      }
-      err.classList.add('d-none');
-      const url = URL.createObjectURL(f), img = $('img', prev), vid = $('video', prev);
-      img.classList.toggle('d-none', kind !== 'image'); vid.classList.toggle('d-none', kind !== 'video');
-      (kind === 'image' ? img : vid).src = url; $('.attach-name', prev).textContent = f.name;
-      prev.classList.remove('d-none'); update();
-    });
-    form.addEventListener('submit', () => {                       // spinner while the message is being sent
-      send.classList.add('sending'); $('i', send).className = 'bi bi-arrow-repeat';
-      setTimeout(() => { send.disabled = true; }, 0);
-    });
-    update(); if (!('ontouchstart' in window)) ta.focus();
-  }
+const form = $('#composeForm');
+if (form) {
+  const ta = $('textarea', form), file = $('input[type=file]', form), send = $('.compose-send', form);
+  const prev = $('#attachPreview'), err = $('#attachError');
+  const MAX_MB = { image: 10, video: 50, pdf: 20 };   // ✅ added pdf
+  const update = () => { send.disabled = !ta.value.trim() && !file.files.length; };
+  const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; };
+  const clear = () => { file.value = ''; prev.classList.add('d-none'); update(); };
 
-  /* ---- Photo viewer ---- */
-  const lb = $('#lightbox');
-  document.addEventListener('click', e => {
-    const im = e.target.closest('.js-lightbox');
-    if (im && lb) { $('img', lb).src = im.src; lb.classList.remove('d-none'); }
-    else if (lb && e.target.closest('#lightbox')) lb.classList.add('d-none');
+  ta.addEventListener('input', () => { grow(); update(); });
+  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!send.disabled) form.requestSubmit(); } });
+  $('.attach-x', form).addEventListener('click', () => { clear(); err.classList.add('d-none'); });
+
+  file.addEventListener('change', () => {
+    const f = file.files[0]; if (!f) return clear();
+
+    // ✅ detect image / video / pdf
+    const kind =
+      f.type.startsWith('video/') ? 'video' :
+      f.type.startsWith('image/') ? 'image' :
+      f.type === 'application/pdf' ? 'pdf' : null;
+
+    if (!kind || f.size > MAX_MB[kind] * 1048576) {
+      clear();
+      err.textContent = kind
+        ? `${kind === 'video' ? 'Videos' : kind === 'image' ? 'Photos' : 'PDFs'} can be up to ${MAX_MB[kind]} MB.`
+        : 'Only photos, videos, and PDFs can be sent.';
+      return err.classList.remove('d-none');
+    }
+
+    err.classList.add('d-none');
+
+    const url = URL.createObjectURL(f);
+    const img = $('img', prev), vid = $('video', prev), pdf = $('.attach-pdf', prev);
+
+    // ✅ toggle each preview type
+    img.classList.toggle('d-none', kind !== 'image');
+    vid.classList.toggle('d-none', kind !== 'video');
+    if (pdf) pdf.classList.toggle('d-none', kind !== 'pdf');
+
+    // ✅ set the correct source
+    if (kind === 'image') img.src = url;
+    else if (kind === 'video') vid.src = url;
+    else if (kind === 'pdf' && pdf) pdf.src = url;   // iframe preview (optional)
+
+    $('.attach-name', prev).textContent = f.name;
+    prev.classList.remove('d-none');
+    update();
   });
+
+  form.addEventListener('submit', () => {
+    send.classList.add('sending'); $('i', send).className = 'bi bi-arrow-repeat';
+    setTimeout(() => { send.disabled = true; }, 0);
+  });
+
+  update(); if (!('ontouchstart' in window)) ta.focus();
+}
+
+/* ---- Photo viewer ---- */
+const lb = $('#lightbox');
+document.addEventListener('click', e => {
+  const im = e.target.closest('.js-lightbox');
+  if (im && lb) { $('img', lb).src = im.src; lb.classList.remove('d-none'); }
+  else if (lb && e.target.closest('#lightbox')) lb.classList.add('d-none');
+});
 
   /* ---- Esc: close the photo, otherwise leave the chat room for the conversations page (not while a draft is typed) ---- */
   document.addEventListener('keydown', e => {

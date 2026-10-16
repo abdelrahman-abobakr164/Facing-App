@@ -1,4 +1,4 @@
-from django.db.models import Q, Exists, OuterRef, Prefetch, When, Case, Count, F
+from django.db.models import Q, Exists, OuterRef, Prefetch, When, Case, Count, F, Max
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -9,6 +9,7 @@ from .models import *
 from .forms import *
 from accounts.models import Follow
 from posts.utils import get_safe_next_url
+from posts.decorator import owner_ship_required
 
 User = get_user_model()
 
@@ -29,6 +30,7 @@ def lobby(request):
             ),
         )
         .annotate(
+            latest_messages=Max("messages__timestamp"),
             unread_count=Case(
                 When(
                     is_group=False,
@@ -44,22 +46,25 @@ def lobby(request):
                     then=Count(
                         "messages",
                         filter=Q(messages__read=False)
-                        & ~Q(messages__read_by=request.user),
+                        & ~Q(messages__read_by=request.user)
+                        & ~Q(messages__sender=request.user),
                         distinct=True,
                     ),
                 ),
             ),
             readed=Exists(
                 Message.objects.filter(
-                    read=True, sender=request.user, conversation=OuterRef("id")
+                    read=True,
+                    sender=request.user,
+                    conversation=OuterRef("id"),
                 )
             ),
         )
+        .order_by("-latest_messages")
+        .distinct()
     )
 
-    context = {
-        "conversations": conversations,
-    }
+    context = {"conversations": conversations}
     return render(request, "messages/lobby.html", context)
 
 
@@ -81,20 +86,51 @@ def mark_seen(request, user, id):
 
 @login_required
 def chat_room(request, id):
-    conversation = get_object_or_404(Conversation, id=id)
-    mark_seen(request, conversation.other_participants(request.user), id)
+    conv = get_object_or_404(Conversation, id=id)
+
+    other_user = conv.other_participants(request.user)
+
+    if request.user not in conv.participants.all():
+        return redirect("lobby")
+
+    exists_follow = Follow.objects.filter(
+        Q(follower=request.user, following=other_user)
+        | Q(following=request.user, follower=other_user),
+        status=Follow.Status.ACCEPTED,
+    )
+
+    btn = False
+    if not exists_follow.exists():
+        btn = True
+        messages.warning(request, "You're not friends any more")
+
+    mark_seen(request, conv.other_participants(request.user), id)
 
     msgs = (
-        Message.objects.filter(conversation=conversation)
-        .select_related("sender")
+        Message.objects.filter(conversation=conv)
+        .select_related("sender", "conversation")
         .prefetch_related(Prefetch("attachments", MessageAttachment.objects.all()))
+        .order_by("timestamp")
     )
-    if conversation.is_group:
-        name = conversation.group_name
+    if conv.is_group:
+        name = conv.group_name
     else:
-        name = conversation.other_participants(request.user)
+        name = conv.other_participants(request.user)
 
-    context = {"conversation": conversation, "msgs": msgs, "name": name}
+    if request.method == "POST":
+        next_url = get_safe_next_url(request)
+        form = MessageForm(request.POST, request.FILES)
+        with transaction.atomic():
+            if form.is_valid():
+                form.save(request.user, conv)
+                return redirect(next_url)
+            else:
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
+                return redirect(next_url)
+
+    context = {"conversation": conv, "msgs": msgs, "name": name, "btn": btn}
     return render(request, "messages/chat.html", context)
 
 
@@ -144,7 +180,10 @@ def group(request, id=None):
                 form.save_m2m()
                 group.participants.add(request.user)
                 group.admin.add(request.user)
-                messages.success(request, f"{form.cleaned_data['group_name']} has been created Successfully!")
+                messages.success(
+                    request,
+                    f"{form.cleaned_data['group_name']} has been created Successfully!",
+                )
                 return redirect("lobby")
 
             else:
@@ -181,7 +220,13 @@ def leave(request, id):
 
 
 @login_required
-def delete_chat(request, id):
-    next_url = get_safe_next_url(request)
+def delete_chat(request, conv_id, id):
     Message.objects.get(id=id).delete()
-    return redirect(next_url)
+    return redirect("chat", id=conv_id)
+
+
+@login_required
+@owner_ship_required(Message, id_kwarg="id", user="sender")
+def chat_info(request, id):
+    Message.objects.prefetch_related("read_by").get(id=id)
+    return render(request, "messages/info.html")
